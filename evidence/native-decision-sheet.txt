@@ -1,0 +1,111 @@
+OPENRETURN / DECISION SHEET
+The Thursday pantry window
+Service day: 2026-11-12
+Data: synthetic. Unverified scheduled stop-to-stop scenarios, not travel advice.
+
+Current: 09:00–11:00 — 3/7 origins
+Best tested: 10:30–12:30 — 4/7 origins
+Gained: Orchard, Eastbank
+Lost: Maple Court
+
+APPLIED CONSTRAINTS
+Current start: 09:00
+Staffed minutes: 120
+Earliest start: 09:00
+Latest start: 13:00
+Visit minutes: 15
+Search step (min): 15
+Transfer buffer (min): 10
+Max transfers / leg: 2
+
+CURRENT: 09:00–11:00
+
+Maple Court (maple)
+Origin stop: Maple Court; leave after 08:00; home by 16:00; maximum away 180 min.
+Outbound 08:45–09:00: Maple Court → Community pantry [trip A1, connection a-out]
+Visit 09:00–09:15 at Community pantry
+Return 10:00–10:15: Community pantry → Maple Court [trip A2, connection a-home]
+Back 10:15; 90 minutes away; 45 scheduled wait minutes.
+
+Hilltop (hilltop)
+Origin stop: Hilltop; leave after 08:00; home by 16:00; maximum away 180 min.
+Outbound 09:40–09:50: Hilltop → Hilltop interchange [trip B1, connection b-out-1]
+Outbound 09:53–10:05: Hilltop interchange → Community pantry [trip B1, connection b-out-2]
+Visit 10:05–10:20 at Community pantry
+Return 10:45–11:00: Community pantry → Hilltop interchange [trip B2, connection b-home-1]
+Return 11:03–11:15: Hilltop interchange → Hilltop [trip B2, connection b-home-2]
+Back 11:15; 95 minutes away; 31 scheduled wait minutes.
+
+Willow (willow)
+Origin stop: Willow; leave after 08:00; home by 16:00; maximum away 180 min.
+Outbound 09:40–10:00: Willow → Community pantry [trip C1, connection c-out]
+Visit 10:00–10:15 at Community pantry
+Return 12:10–12:30: Community pantry → Willow [trip C2, connection c-home]
+Back 12:30; 170 minutes away; 115 scheduled wait minutes.
+
+West End (west)
+Origin stop: West End; leave after 08:00; home by 16:00; maximum away 180 min.
+NO COMPLETE TRIP: No outbound journey reaches the pantry within the supplied availability, maximum time away and transfer limit.
+
+Orchard (orchard)
+Origin stop: Orchard; leave after 08:00; home by 16:00; maximum away 180 min.
+NO COMPLETE TRIP: Outbound travel exists, but no pickup fits both the opening window and the supplied time limits.
+
+Eastbank (east)
+Origin stop: Eastbank; leave after 08:00; home by 16:00; maximum away 180 min.
+NO COMPLETE TRIP: Outbound travel exists, but no pickup fits both the opening window and the supplied time limits.
+
+South Wharf (wharf)
+Origin stop: South Wharf; leave after 08:00; home by 16:00; maximum away 180 min.
+NO COMPLETE TRIP: Pickup fits, but no scheduled return reaches the origin by its home deadline within the transfer limit.
+
+BEST TESTED: 10:30–12:30
+
+Maple Court (maple)
+Origin stop: Maple Court; leave after 08:00; home by 16:00; maximum away 180 min.
+NO COMPLETE TRIP: Pickup fits, but no scheduled return reaches the origin by its home deadline within the transfer limit.
+
+Hilltop (hilltop)
+Origin stop: Hilltop; leave after 08:00; home by 16:00; maximum away 180 min.
+Outbound 09:40–09:50: Hilltop → Hilltop interchange [trip B1, connection b-out-1]
+Outbound 09:53–10:05: Hilltop interchange → Community pantry [trip B1, connection b-out-2]
+Visit 10:30–10:45 at Community pantry
+Return 10:45–11:00: Community pantry → Hilltop interchange [trip B2, connection b-home-1]
+Return 11:03–11:15: Hilltop interchange → Hilltop [trip B2, connection b-home-2]
+Back 11:15; 95 minutes away; 31 scheduled wait minutes.
+
+Willow (willow)
+Origin stop: Willow; leave after 08:00; home by 16:00; maximum away 180 min.
+Outbound 09:40–10:00: Willow → Community pantry [trip C1, connection c-out]
+Visit 10:30–10:45 at Community pantry
+Return 12:10–12:30: Community pantry → Willow [trip C2, connection c-home]
+Back 12:30; 170 minutes away; 115 scheduled wait minutes.
+
+West End (west)
+Origin stop: West End; leave after 08:00; home by 16:00; maximum away 180 min.
+NO COMPLETE TRIP: No outbound journey reaches the pantry within the supplied availability, maximum time away and transfer limit.
+
+Orchard (orchard)
+Origin stop: Orchard; leave after 08:00; home by 16:00; maximum away 180 min.
+Outbound 11:20–11:40: Orchard → Community pantry [trip E1, connection e-out]
+Visit 11:40–11:55 at Community pantry
+Return 12:10–12:30: Community pantry → Orchard [trip E2, connection e-home]
+Back 12:30; 70 minutes away; 15 scheduled wait minutes.
+
+Eastbank (east)
+Origin stop: Eastbank; leave after 08:00; home by 16:00; maximum away 180 min.
+Outbound 11:45–12:05: Eastbank → Community pantry [trip F1, connection f-out]
+Visit 12:05–12:20 at Community pantry
+Return 12:35–12:55: Community pantry → Eastbank [trip F2, connection f-home]
+Back 12:55; 70 minutes away; 15 scheduled wait minutes.
+
+South Wharf (wharf)
+Origin stop: South Wharf; leave after 08:00; home by 16:00; maximum away 180 min.
+NO COMPLETE TRIP: Pickup fits, but no scheduled return reaches the origin by its home deadline within the transfer limit.
+
+LIMITATIONS
+Counts represent origins, not people served or real-world impact. Equal staffed duration does not establish fairness. Review every lost origin.
+Best means highest reachable count among tested start times only, then closest to current start, then earlier start; a coarse step may miss better windows. One feasible witness is shown per origin, not a guaranteed itinerary.
+One supplied service-day timetable. No walking, live delays, cancellations, fares, wheelchair accessibility, capacity, demand, or automatic service-calendar / GTFS verification.
+Verify the date, timetable, stop access and local assumptions with operators and the community before changing real opening hours.
+No accounts, telemetry or autosave. This export contains applied data only; unapplied drafts are excluded.

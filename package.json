@@ -1,0 +1,1 @@
+{"name":"openreturn","version":"0.1.0","private":true,"type":"module","scripts":{"test":"node --test tests/*.test.mjs","check":"node --check src/model.mjs && node --check src/app.mjs && node --check src/import.mjs","serve":"python3 -m http.server 4193"}}

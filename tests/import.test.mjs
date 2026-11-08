@@ -1,0 +1,9 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {parseScenarioJson,exportScenarioJson,parseTimetableCsv,connectionsToCsv,parseTime} from '../src/import.mjs';
+import {SAMPLE} from '../src/sample.mjs';
+test('scenario export/import preserves normalized original without mutation',()=>{const before=JSON.stringify(SAMPLE);const parsed=parseScenarioJson(exportScenarioJson(SAMPLE));assert.deepEqual(parsed,JSON.parse(exportScenarioJson(SAMPLE)));assert.equal(JSON.stringify(SAMPLE),before);assert.notEqual(parsed,SAMPLE);});
+test('bad JSON, arrays and oversize are rejected',()=>{for(const x of ['', '{', '[]', ' '.repeat(500001)])assert.throws(()=>parseScenarioJson(x));});
+test('connection CSV round trip including quoted IDs',()=>{const c=[...SAMPLE.connections,{id:'extra,"leg',tripId:'other',from:'A',to:'P',departure:1440,arrival:1460}];assert.deepEqual(parseTimetableCsv(connectionsToCsv(c)),c);});
+test('exact service-day time parsing',()=>{assert.equal(parseTime('00:00'),0);assert.equal(parseTime('24:15'),1455);assert.equal(parseTime('47:59'),2879);for(const x of ['24:60','48:00','-1:00','09:00:00',' 09:00','09:00 ','NaN','1e1:00'])assert.throws(()=>parseTime(x));});
+test('invalid CSV never silently loses input',()=>{const head='id,trip_id,from_stop_id,to_stop_id,departure,arrival\n';for(const tail of ['x,t,A,P,09:00,08:00','x,t,A,P,09:00,09:00','x,t,A,P,09:00','"x,t,A,P,09:00,10:00','"x"z,t,A,P,09:00,10:00',' x,t,A,P,09:00,10:00','x,t,A,P,09:00,10:00\nx,t,A,P,09:00,10:00'])assert.throws(()=>parseTimetableCsv(head+tail));assert.throws(()=>parseTimetableCsv('arrival,departure\n10:00,09:00'));});
+test('CRLF and BOM accepted; full scenario validates known stops after CSV assembly',()=>{assert.deepEqual(parseTimetableCsv('\uFEFF'+connectionsToCsv(SAMPLE.connections)),SAMPLE.connections);const s=structuredClone(SAMPLE);s.connections[0].from='missing';assert.throws(()=>parseScenarioJson(JSON.stringify(s)));});
