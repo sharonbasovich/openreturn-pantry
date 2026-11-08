@@ -1,17 +1,15 @@
 import { SAMPLE } from './sample.mjs';
-import { validateScenario, optimizeWindows, formatTime } from './model.mjs';
+import { validateScenario, formatTime } from './model.mjs';
 import { parseScenarioJson, exportScenarioJson, parseTimetableCsv, connectionsToCsv } from './import.mjs';
+import { auditDecision, auditSensitivity, rangeLabel } from './decision.mjs';
+
+import { buildDecisionSheet, SETTINGS_FIELDS as fields } from './report.mjs';
 
 const $ = id => document.getElementById(id);
 const node = (tag, text, cls) => { const el = document.createElement(tag); if (text !== undefined) el.textContent = text; if (cls) el.className = cls; return el; };
 const clone = value => JSON.parse(JSON.stringify(value));
-const fields = [
-  ['baselineStart','Current start','time'], ['openMinutes','Staffed minutes','number'],
-  ['earliestStart','Earliest start','time'], ['latestStart','Latest start','time'],
-  ['visitMinutes','Visit minutes','number'], ['stepMinutes','Search step (min)','number'],
-  ['transferMinutes','Transfer buffer (min)','number'], ['maxTransfers','Max transfers / leg','number']
-];
-let scenario, comparison, selectedStart, selectedOrigin, settingsDirty = false, dataDirty = false, workingChanged = false, inputKind = 'json';
+
+let scenario, comparison, audit, sensitivity = null, selectedStart, selectedOrigin, settingsDirty = false, dataDirty = false, workingChanged = false, inputKind = 'json';
 const range = w => `${formatTime(w.start)}–${formatTime(w.end)}`;
 const status = (id, message, error = false) => { $(id).textContent = message; $(id).classList.toggle('error', error); };
 function timeInput(value) { return `${String(Math.floor(value / 60)).padStart(2,'0')}:${String(value % 60).padStart(2,'0')}`; }
@@ -32,7 +30,7 @@ for (const [key,label,type] of fields) {
   wrap.append(l,input); $('fields').append(wrap);
 }
 function populateFields() { for(const [key,,type] of fields) $(`field-${key}`).value=type==='time'?timeInput(scenario.settings[key]):scenario.settings[key]; settingsDirty=false; }
-function currentInput() { return inputKind==='json'?exportScenarioJson(scenario):connectionsToCsv(scenario.connections); }
+function currentInput(kind = inputKind) { return kind==='json'?exportScenarioJson(scenario):connectionsToCsv(scenario.connections); }
 function populateData() { $('import-text').value=currentInput();dataDirty=false; }
 async function prepare(value, returnFocus = document.activeElement) {
   const normalized=validateScenario(value);
@@ -41,7 +39,7 @@ async function prepare(value, returnFocus = document.activeElement) {
   $('planner').setAttribute('aria-busy','true');status('settings-status','Calculating scheduled return journeys…');
   try {
     await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-    const result=optimizeWindows(normalized); return {normalized,result};
+    const decision=auditDecision(normalized); return {normalized,result:decision.comparison,decision};
   } finally {
     controls.forEach((el,i)=>{el.disabled=previous[i];});$('planner').removeAttribute('aria-busy');
     // Disabling the focused control sends focus to body. Restore it only if the
@@ -53,14 +51,18 @@ async function prepare(value, returnFocus = document.activeElement) {
   }
 }
 function commit(prepared, { replaceDraft = true } = {}) {
-  scenario=prepared.normalized;comparison=prepared.result;selectedStart=comparison.best.start;
+  scenario=prepared.normalized;comparison=prepared.result;audit=prepared.decision;sensitivity=null;selectedStart=comparison.best.start;
   if(!scenario.origins.some(o=>o.id===selectedOrigin))selectedOrigin=scenario.origins[0]?.id;
   populateFields();if(replaceDraft)populateData();render();
 }
 function renderCard(title, window, best) {
   const card=node('article',undefined,`compare-card${best?' best':''}`);card.append(node('p',title,'card-label'),node('p',range(window),'card-time'));
   const count=node('div',String(window.reachable),'card-count');count.append(node('span',` / ${window.total} origins`));
-  card.append(count,node('p',`${scenario.settings.openMinutes} staffed minutes · complete return trips`,'card-explainer'));const inspect=node('button','Inspect journeys →','inspect-button');inspect.type='button';inspect.addEventListener('click',()=>{selectedStart=window.start;renderSelection();$('journey-title').scrollIntoView({block:'start'});});card.append(inspect);return card;
+  card.append(count,node('p',`${scenario.settings.openMinutes} staffed minutes · complete return trips`,'card-explainer'));
+  const burden=best?audit.best:audit.baseline;
+  card.append(node('p',`Scheduled waits: ${rangeLabel(burden.waitRange)}`,'card-explainer'),node('p',`Time away: ${rangeLabel(burden.awayRange)}`,'card-explainer'));
+  if(burden.journeys.length)card.append(node('p',`${burden.zeroHeadroom.away.length} of ${burden.reachable} feasible origins use their full away allowance.`,'card-explainer'));
+  const inspect=node('button','Inspect journeys →','inspect-button');inspect.type='button';inspect.addEventListener('click',()=>{selectedStart=window.start;renderSelection();$('journey-title').scrollIntoView({block:'start'});});card.append(inspect);return card;
 }
 function originLabels(entries) { return entries.map(item=>{const id=typeof item==='string'?item:item.originId??item.id;return scenario.origins.find(o=>o.id===id)?.label??String(id);}).join(', ') || 'None'; }
 function render() {
@@ -71,14 +73,46 @@ function render() {
   const lost=node('p',undefined,'loss');lost.append(node('strong','Lost'),document.createTextNode(originLabels(comparison.lost)));
   const net=comparison.best.reachable-comparison.baseline.reachable;
   $('tradeoffs').replaceChildren(node('p',`${net>0?'+':''}${net} net origins versus current hours. Gains do not cancel out the importance of losses.`),gained,lost);
+  $('tradeoffs').append(node('p',`${audit.tiedBestStarts.length} grid start${audit.tiedBestStarts.length===1?'':'s'} share the highest coverage: ${audit.tiedBestStarts.map(formatTime).join(', ')}. The tie-break selects the closest to current hours, then the earlier start. Equal counts can cover different origins and waits.`));
   $('window-chart').replaceChildren();
   for(const window of comparison.windows) {
     const button=node('button',undefined,'window-bar');button.type='button';button.dataset.start=String(window.start);button.setAttribute('aria-label',`${range(window)}: ${window.reachable} of ${window.total} origins reachable`);
     const track=node('span',undefined,'bar-track');const fill=node('span',undefined,'bar-fill');fill.style.height=`${window.total?100*window.reachable/window.total:0}%`;track.append(fill,node('span',String(window.reachable),'bar-count'));
     button.append(track,node('span',formatTime(window.start)));button.addEventListener('click',()=>{selectedStart=window.start;renderSelection();});$('window-chart').append(button);
   }
-  renderSelection();
+  renderSelection();renderSensitivity();
 }
+
+function renderSensitivity() {
+  const output=$('sensitivity-results');output.replaceChildren();
+  status('sensitivity-status',sensitivity?'Checks use applied data only. Unapplied edits are excluded.':'Not run for these applied data.');
+  if(!sensitivity)return;
+  for(const item of sensitivity.cases) {
+    const card=node('article',undefined,'sensitivity-card');card.append(node('h4',item.label),node('p',`Visit ${item.visitMinutes} min · Transfer buffer ${item.transferMinutes} min`,'hint'));
+    if(item.status!=='evaluated'){card.append(node('p',`Not applicable: ${item.reason}`,'failure'));output.append(card);continue;}
+    card.append(node('p',`Keep ${range(item.fixed)}: ${item.fixed.reachable}/${item.fixed.total} origins.`, 'sensitivity-result'),
+      node('p',`Lost from applied best: ${originLabels(item.fixedLost)}. Gained: ${originLabels(item.fixedGained)}.`),
+      node('p',`Search again: ${range(item.reoptimized)}, ${item.reoptimized.reachable}/${item.reoptimized.total}.`, 'sensitivity-result'),
+      node('p',`Current hours under these changed assumptions: ${item.current.reachable}/${item.current.total}. New best is ${item.reoptimizedNet>=0?'+':''}${item.reoptimizedNet} net versus that current window.`),
+      node('p',`Search-again losses from applied best: ${originLabels(item.reoptimizedLost)}. Gains: ${originLabels(item.reoptimizedGained)}.`),
+      node('p',`Search-again losses versus changed current hours: ${originLabels(item.versusChangedCurrentLost)}. Gains: ${originLabels(item.versusChangedCurrentGained)}.`));
+    output.append(card);
+  }
+}
+
+$('check-assumptions').addEventListener('click',async()=>{
+  const initiator=$('check-assumptions'), controls=[...document.querySelectorAll('button,input,select,textarea')];
+  const previous=controls.map(el=>el.disabled);controls.forEach(el=>{el.disabled=true;});
+  $('assumption-check').setAttribute('aria-busy','true');status('sensitivity-status','Checking three hypothetical changes against the applied data…');
+  try {
+    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
+    sensitivity=auditSensitivity(scenario);renderSensitivity();
+  } catch(error) {status('sensitivity-status',`Checks failed: ${error.message}`,true);}
+  finally {
+    controls.forEach((el,i)=>{el.disabled=previous[i];});$('assumption-check').removeAttribute('aria-busy');
+    if(!document.querySelector('dialog[open]')&&(!document.activeElement||document.activeElement===document.body||document.activeElement===document.documentElement))initiator.focus({preventScroll:true});
+  }
+});
 function renderSelection() {
   const focusedOrigin=$('origin-list').contains(document.activeElement)?document.activeElement.dataset.originId:undefined;
   const window=(selectedStart===comparison.baseline.start?comparison.baseline:comparison.windows.find(w=>w.start===selectedStart))??comparison.best;
@@ -96,6 +130,14 @@ function renderSelection() {
   if(!origin||!result){detail.append(node('p','No origin available to inspect.','empty'));return;}
   detail.append(node('h3',origin.label),node('p',`Leave no earlier than ${formatTime(origin.leaveAfter)} · Home by ${formatTime(origin.homeBy)} · Up to ${origin.maxAwayMinutes} minutes away`,'journey-meta'));
   if(!result.reachable||!result.journey){detail.append(node('p',result.reason||'No complete scheduled return journey meets these constraints.','failure'));return;}
+  const summary=(window.start===audit.baseline.start?audit.baseline:audit.windows.find(w=>w.start===window.start)).journeys.find(j=>j.originId===origin.id);
+  const burden=node('div',undefined,'journey-burden');burden.append(node('p',`${summary.awayMinutes} minutes away · ${summary.waitMinutes} scheduled wait minutes`,'sensitivity-result'),
+    node('p',`Waiting: ${summary.waits.beforeVisit} before the visit + ${summary.waits.afterVisit} after the visit + ${summary.waits.transfers} at vehicle changes + ${summary.waits.onBoard} on board.`));
+  const margins=node('dl',undefined,'headroom');
+  for(const [key,label] of [['away','Away allowance'],['home','Home deadline'],['closing','Closing time'],['returnDeparture','Return departure'],['transfer','Vehicle-change buffer']]) {
+    const value=summary.headroom[key], row=node('div');row.append(node('dt',label),node('dd',value===null?'Not applicable':`${value} min remaining`,value===0?'loss':''));margins.append(row);
+  }
+  burden.append(margins,node('p','Remaining minutes describe this scheduled witness. They are not delay tolerances or a reliability score. Waits are not minimized separately.','hint'));detail.append(burden);
   const j=result.journey;const list=node('ol',undefined,'timeline');
   const stopName=id=>scenario.stops.find(s=>s.id===id)?.name??id;
   const add=(title,text,cls='')=>{const li=node('li',undefined,cls);li.append(node('strong',title),node('span',text));list.append(li);};
@@ -124,10 +166,20 @@ $('settings-form').addEventListener('submit',async event=>{
 $('import-text').addEventListener('input',()=>{dataDirty=true;status('import-status','Unapplied draft. Your current comparison is unchanged.');});
 $('import-kind').addEventListener('change',async()=>{
   const next=$('import-kind').value;$('import-kind').value=inputKind;
+  // Prepare the replacement before asking to discard a draft or changing mode.
+  let replacement;
+  try { replacement=currentInput(next); }
+  catch(error) { status('import-status',`Format not changed: ${error.message} Your draft and current comparison are preserved.`,true);return; }
   if(dataDirty&&!await confirmReplace('Changing formats replaces the unapplied text draft. Your applied scenario stays unchanged.',$('import-kind')))return;
-  inputKind=next;$('import-kind').value=next;populateData();$('import-help').textContent=next==='json'?'JSON includes stops, origins, timetable and opening constraints. Times are integer minutes from service-day midnight.':'CSV replaces timetable connections only. Use existing stop IDs and HH:MM times (00:00–47:59). Export CSV for the exact columns.';status('import-status','Current data loaded in the selected format.');
+  inputKind=next;$('import-kind').value=next;$('import-text').value=replacement;dataDirty=false;$('import-help').textContent=next==='json'?'JSON includes stops, origins, timetable and opening constraints. Times are integer minutes from service-day midnight.':'CSV replaces timetable connections only. Use existing stop IDs and HH:MM times (00:00–47:59). Export CSV for the exact columns. CSV supports restricted IDs; JSON preserves all supported scenario IDs exactly.';status('import-status','Current data loaded in the selected format.');
 });
-$('load-current').addEventListener('click',async()=>{if(dataDirty&&!await confirmReplace('Loading current data replaces your unapplied text draft. Your applied scenario stays unchanged.',$('load-current')))return;populateData();status('import-status','Current applied data loaded.');});
+$('load-current').addEventListener('click',async()=>{
+  let replacement;
+  try { replacement=currentInput(); }
+  catch(error) {status('import-status',`Current data not loaded: ${error.message} Your draft is preserved.`,true);return;}
+  if(dataDirty&&!await confirmReplace('Loading current data replaces your unapplied text draft. Your applied scenario stays unchanged.',$('load-current')))return;
+  $('import-text').value=replacement;dataDirty=false;status('import-status','Current applied data loaded.');
+});
 $('import-apply').addEventListener('click',async()=>{
   const returnFocus=$('import-apply'); // Preserve the initiator before prepare temporarily disables controls.
   let prepared;
@@ -137,30 +189,18 @@ $('import-apply').addEventListener('click',async()=>{
   commit(prepared);workingChanged=true;status('settings-status','');status('import-status','Validated and imported. Review all assumptions before using these results.');
 });
 $('reset').addEventListener('click',async()=>{if((workingChanged||settingsDirty||dataDirty)&&!await confirmReplace('Resetting replaces the applied scenario and all unapplied edits with the synthetic example. Export first to keep your current scenario.',$('reset')))return;try{commit(await prepare(clone(SAMPLE),$('reset')));workingChanged=false;status('settings-status','Synthetic example restored.');status('import-status','');}catch(error){status('settings-status',error.message,true);}});
-function decisionSheet() {
-  const lines=['OPENRETURN / DECISION SHEET',scenario.title,`Service day: ${scenario.serviceDay}`,`Data: ${scenario.dataKind}. Unverified scheduled stop-to-stop scenarios, not travel advice.`, '', `Current: ${range(comparison.baseline)} — ${comparison.baseline.reachable}/${comparison.baseline.total} origins`, `Best tested: ${range(comparison.best)} — ${comparison.best.reachable}/${comparison.best.total} origins`, `Gained: ${originLabels(comparison.gained)}`, `Lost: ${originLabels(comparison.lost)}`, '', 'APPLIED CONSTRAINTS'];
-  for(const [key,label,type] of fields)lines.push(`${label}: ${type==='time'?formatTime(scenario.settings[key]):scenario.settings[key]}`);
-  const stop=id=>scenario.stops.find(s=>s.id===id)?.name??id;
-  for(const [label,window] of [['CURRENT',comparison.baseline],['BEST TESTED',comparison.best]]) {
-    lines.push('',`${label}: ${range(window)}`);
-    for(const origin of scenario.origins) {
-      const r=window.results.find(x=>x.originId===origin.id);
-      lines.push('',`${origin.label} (${origin.id})`, `Origin stop: ${stop(origin.stopId)}; leave after ${formatTime(origin.leaveAfter)}; home by ${formatTime(origin.homeBy)}; maximum away ${origin.maxAwayMinutes} min.`);
-      if(!r?.reachable||!r.journey){lines.push(`NO COMPLETE TRIP: ${r?.reason||'No feasible return witness.'}`);continue;}
-      const j=r.journey;
-      for(const c of j.outbound)lines.push(`Outbound ${formatTime(c.departure)}–${formatTime(c.arrival)}: ${stop(c.from)} → ${stop(c.to)} [trip ${c.tripId}, connection ${c.id}]`);
-      lines.push(`Visit ${formatTime(j.pickupStart)}–${formatTime(j.pickupEnd)} at ${stop(scenario.pantryStop)}`);
-      for(const c of j.return)lines.push(`Return ${formatTime(c.departure)}–${formatTime(c.arrival)}: ${stop(c.from)} → ${stop(c.to)} [trip ${c.tripId}, connection ${c.id}]`);
-      lines.push(`Back ${formatTime(j.arrive)}; ${j.awayMinutes} minutes away; ${j.waitMinutes} scheduled wait minutes.`);
-    }
-  }
-  lines.push('', 'LIMITATIONS', 'Counts represent origins, not people served or real-world impact. Equal staffed duration does not establish fairness. Review every lost origin.', 'Best means highest reachable count among tested start times only, then closest to current start, then earlier start; a coarse step may miss better windows. One feasible witness is shown per origin, not a guaranteed itinerary.', 'One supplied service-day timetable. No walking, live delays, cancellations, fares, wheelchair accessibility, capacity, demand, or automatic service-calendar / GTFS verification.', 'Verify the date, timetable, stop access and local assumptions with operators and the community before changing real opening hours.', 'No accounts, telemetry or autosave. This export contains applied data only; unapplied drafts are excluded.');
-  return lines.join('\n');
-}
+
 function exportData(kind) {
-  const text=kind==='txt'?decisionSheet():kind==='json'?exportScenarioJson(scenario):connectionsToCsv(scenario.connections);$('export-text').value=text;$('export-fallback').open=true;
-  const blob=new Blob([text],{type:kind==='json'?'application/json':kind==='txt'?'text/plain;charset=utf-8':'text/csv;charset=utf-8'});const url=URL.createObjectURL(blob);const a=node('a');a.href=url;a.download=`openreturn-scenario.${kind}`;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),30000);
-  status('import-status',`Export prepared from applied data.${settingsDirty||dataDirty?' Unapplied drafts are not included.':''} Copyable content is also available below.`);
+  let text;
+  try { text=kind==='txt'?buildDecisionSheet(audit,sensitivity):kind==='json'?exportScenarioJson(scenario):connectionsToCsv(scenario.connections); }
+  catch(error) {status('import-status',`Not exported: ${error.message} Applied data, drafts and any previous copyable export are preserved.`,true);return;}
+  $('export-text').value=text;$('export-fallback').open=true;
+  let url, anchor;
+  try {
+    const blob=new Blob([text],{type:kind==='json'?'application/json':kind==='txt'?'text/plain;charset=utf-8':'text/csv;charset=utf-8'});url=URL.createObjectURL(blob);anchor=node('a');anchor.href=url;anchor.download=`openreturn-scenario.${kind}`;document.body.append(anchor);anchor.click();
+    status('import-status',`Export prepared from applied data.${settingsDirty||dataDirty?' Unapplied drafts are not included.':''} Copyable content is also available below.${kind==='csv'?' CSV is a timetable helper, not a full backup. Import IDs as text in spreadsheet software; automatic conversion can change them.':''}`);
+  } catch(error) {status('import-status',`Automatic download could not be started. Copyable export content is available below. Applied data and drafts are unchanged.`,true);}
+  finally {anchor?.remove();if(url)setTimeout(()=>URL.revokeObjectURL(url),30000);}
 }
 $('export-report').addEventListener('click',()=>exportData('txt'));
 $('export-json').addEventListener('click',()=>exportData('json'));$('export-csv').addEventListener('click',()=>exportData('csv'));

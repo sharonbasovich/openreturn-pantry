@@ -1,0 +1,40 @@
+{
+  "node": "v24.22.1",
+  "platform": "linux",
+  "arch": "x64",
+  "workload": {
+    "connections": 1200,
+    "origins": 24,
+    "gridWindows": 48,
+    "kind": "synthetic"
+  },
+  "measurements": [
+    {
+      "run": 1,
+      "baselineMs": 4298.508921,
+      "candidateMs": 281.9311310000003,
+      "ratio": 15.24666291995968,
+      "outputSha256": "616a327a7f65ebf99d25df97f6e70b29cf7e68bdb8cb000e20391e6269b26525"
+    },
+    {
+      "run": 2,
+      "baselineMs": 4380.5678100000005,
+      "candidateMs": 272.10676199999943,
+      "ratio": 16.09870985124585,
+      "outputSha256": "616a327a7f65ebf99d25df97f6e70b29cf7e68bdb8cb000e20391e6269b26525"
+    },
+    {
+      "run": 3,
+      "baselineMs": 4359.9431270000005,
+      "candidateMs": 273.020070999999,
+      "ratio": 15.969313578414594,
+      "outputSha256": "616a327a7f65ebf99d25df97f6e70b29cf7e68bdb8cb000e20391e6269b26525"
+    }
+  ],
+  "distinctConstraints": {
+    "baselineMs": 4592.908820000001,
+    "candidateMs": 4244.721801,
+    "outputSha256": "db1eb4172977397aee75b8d1700d971d2e43b8ffa5c4bdcdd20473b8bce05fa7"
+  },
+  "limits": "One Node process on one cloud machine; synthetic cache-friendly case and one distinct-constraint case. Not a native-browser measurement, global speedup, or upper runtime bound."
+}

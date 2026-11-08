@@ -1,0 +1,165 @@
+OPENRETURN / DECISION SHEET
+The Thursday pantry window
+Service day: 2026-11-12
+Data: synthetic. Unverified scheduled stop-to-stop scenarios, not travel advice.
+
+Current: 09:00–11:00 — 3/7 origins
+Best tested: 10:30–12:30 — 5/7 origins
+Gained: West End, Orchard, Eastbank
+Lost: Maple Court
+
+APPLIED CONSTRAINTS
+Current start: 09:00
+Staffed minutes: 120
+Earliest start: 09:00
+Latest start: 13:00
+Visit minutes: 15
+Search step (min): 15
+Transfer buffer (min): 5
+Max transfers / leg: 2
+
+SCHEDULE BURDEN AND HEADROOM
+Ranges cover feasible origin scenarios only, not people. Witnesses minimize time away, not waiting.
+Headroom is arithmetic for the displayed scheduled witness, not a guarantee of delay tolerance.
+CURRENT 09:00–11:00: waits 31–115 min; time away 90–170 min.
+  Maple Court (maple): wait 45 = before visit 0 + after visit 45 + transfers 0 + on-board dwell 0 min; riding 30 min.
+  Remaining minutes: away allowance 90; home deadline 345; closing 105; return departure 45; minimum vehicle-change buffer headroom not applicable.
+  Hilltop (hilltop): wait 31 = before visit 0 + after visit 25 + transfers 0 + on-board dwell 6 min; riding 49 min.
+  Remaining minutes: away allowance 85; home deadline 285; closing 40; return departure 25; minimum vehicle-change buffer headroom not applicable.
+  Willow (willow): wait 115 = before visit 0 + after visit 115 + transfers 0 + on-board dwell 0 min; riding 40 min.
+  Remaining minutes: away allowance 10; home deadline 210; closing 45; return departure 115; minimum vehicle-change buffer headroom not applicable.
+BEST TESTED 10:30–12:30: waits 15–115 min; time away 70–170 min.
+  Hilltop (hilltop): wait 31 = before visit 25 + after visit 0 + transfers 0 + on-board dwell 6 min; riding 49 min.
+  Remaining minutes: away allowance 85; home deadline 285; closing 105; return departure 0; minimum vehicle-change buffer headroom not applicable.
+  Willow (willow): wait 115 = before visit 30 + after visit 85 + transfers 0 + on-board dwell 0 min; riding 40 min.
+  Remaining minutes: away allowance 10; home deadline 210; closing 105; return departure 85; minimum vehicle-change buffer headroom not applicable.
+  West End (west): wait 27 = before visit 0 + after visit 15 + transfers 12 + on-board dwell 0 min; riding 58 min.
+  Remaining minutes: away allowance 80; home deadline 230; closing 65; return departure 15; minimum vehicle-change buffer headroom 1.
+  Orchard (orchard): wait 15 = before visit 0 + after visit 15 + transfers 0 + on-board dwell 0 min; riding 40 min.
+  Remaining minutes: away allowance 110; home deadline 210; closing 35; return departure 15; minimum vehicle-change buffer headroom not applicable.
+  Eastbank (east): wait 15 = before visit 0 + after visit 15 + transfers 0 + on-board dwell 0 min; riding 40 min.
+  Remaining minutes: away allowance 110; home deadline 185; closing 10; return departure 15; minimum vehicle-change buffer headroom not applicable.
+Highest-coverage grid starts (1): 10:30.
+The selected tie-break favors the start closest to current hours, then earlier start. Equal counts can cover different origins or waits.
+
+ASSUMPTION CHECKS
+Hypothetical changes, not measured delays or probabilities. Fixed window: 10:30–12:30. Reoptimization may change hours; it does not rescue the fixed window.
+Applied visit 15 min; transfer buffer 5 min.
+Visit +15 minutes: visit 30 min; transfer buffer 5 min.
+  Current hours with changed assumptions: 3/7.
+  Keep applied best hours 10:30–12:30: 3/7; lost from applied best: Hilltop, Eastbank; gained: None.
+  Search again 10:15–12:15: 4/7; net +1 versus current hours under the SAME changed assumptions.
+  Search-again losses from applied best: Eastbank; gains: None.
+  Search-again losses versus changed current: Maple Court; gains: West End, Orchard.
+  Highest-coverage grid starts: 10:15, 10:45, 11:00.
+Transfer buffer +5 minutes: visit 15 min; transfer buffer 10 min.
+  Current hours with changed assumptions: 3/7.
+  Keep applied best hours 10:30–12:30: 4/7; lost from applied best: West End; gained: None.
+  Search again 10:30–12:30: 4/7; net +1 versus current hours under the SAME changed assumptions.
+  Search-again losses from applied best: West End; gains: None.
+  Search-again losses versus changed current: Maple Court; gains: Orchard, Eastbank.
+  Highest-coverage grid starts: 10:30.
+Both changes: visit 30 min; transfer buffer 10 min.
+  Current hours with changed assumptions: 3/7.
+  Keep applied best hours 10:30–12:30: 2/7; lost from applied best: Hilltop, West End, Eastbank; gained: None.
+  Search again 09:00–11:00: 3/7; net +0 versus current hours under the SAME changed assumptions.
+  Search-again losses from applied best: West End, Orchard, Eastbank; gains: Maple Court.
+  Search-again losses versus changed current: None; gains: None.
+  Highest-coverage grid starts: 09:00, 09:15, 09:30, 10:15, 10:45, 11:00, 11:15, 11:30.
+
+CURRENT: 09:00–11:00
+
+Maple Court (maple)
+Origin stop: Maple Court; leave after 08:00; home by 16:00; maximum away 180 min.
+Outbound 08:45–09:00: Maple Court → Community pantry [trip A1, connection a-out]
+Visit 09:00–09:15 at Community pantry
+Return 10:00–10:15: Community pantry → Maple Court [trip A2, connection a-home]
+Back 10:15; 90 minutes away; 45 scheduled wait minutes.
+
+Hilltop (hilltop)
+Origin stop: Hilltop; leave after 08:00; home by 16:00; maximum away 180 min.
+Outbound 09:40–09:50: Hilltop → Hilltop interchange [trip B1, connection b-out-1]
+Outbound 09:53–10:05: Hilltop interchange → Community pantry [trip B1, connection b-out-2]
+Visit 10:05–10:20 at Community pantry
+Return 10:45–11:00: Community pantry → Hilltop interchange [trip B2, connection b-home-1]
+Return 11:03–11:15: Hilltop interchange → Hilltop [trip B2, connection b-home-2]
+Back 11:15; 95 minutes away; 31 scheduled wait minutes.
+
+Willow (willow)
+Origin stop: Willow; leave after 08:00; home by 16:00; maximum away 180 min.
+Outbound 09:40–10:00: Willow → Community pantry [trip C1, connection c-out]
+Visit 10:00–10:15 at Community pantry
+Return 12:10–12:30: Community pantry → Willow [trip C2, connection c-home]
+Back 12:30; 170 minutes away; 115 scheduled wait minutes.
+
+West End (west)
+Origin stop: West End; leave after 08:00; home by 16:00; maximum away 180 min.
+NO COMPLETE TRIP: Outbound travel exists, but no pickup fits both the opening window and the supplied time limits.
+
+Orchard (orchard)
+Origin stop: Orchard; leave after 08:00; home by 16:00; maximum away 180 min.
+NO COMPLETE TRIP: Outbound travel exists, but no pickup fits both the opening window and the supplied time limits.
+
+Eastbank (east)
+Origin stop: Eastbank; leave after 08:00; home by 16:00; maximum away 180 min.
+NO COMPLETE TRIP: Outbound travel exists, but no pickup fits both the opening window and the supplied time limits.
+
+South Wharf (wharf)
+Origin stop: South Wharf; leave after 08:00; home by 16:00; maximum away 180 min.
+NO COMPLETE TRIP: Pickup fits, but no scheduled return reaches the origin by its home deadline within the transfer limit.
+
+BEST TESTED: 10:30–12:30
+
+Maple Court (maple)
+Origin stop: Maple Court; leave after 08:00; home by 16:00; maximum away 180 min.
+NO COMPLETE TRIP: Pickup fits, but no scheduled return reaches the origin by its home deadline within the transfer limit.
+
+Hilltop (hilltop)
+Origin stop: Hilltop; leave after 08:00; home by 16:00; maximum away 180 min.
+Outbound 09:40–09:50: Hilltop → Hilltop interchange [trip B1, connection b-out-1]
+Outbound 09:53–10:05: Hilltop interchange → Community pantry [trip B1, connection b-out-2]
+Visit 10:30–10:45 at Community pantry
+Return 10:45–11:00: Community pantry → Hilltop interchange [trip B2, connection b-home-1]
+Return 11:03–11:15: Hilltop interchange → Hilltop [trip B2, connection b-home-2]
+Back 11:15; 95 minutes away; 31 scheduled wait minutes.
+
+Willow (willow)
+Origin stop: Willow; leave after 08:00; home by 16:00; maximum away 180 min.
+Outbound 09:40–10:00: Willow → Community pantry [trip C1, connection c-out]
+Visit 10:30–10:45 at Community pantry
+Return 12:10–12:30: Community pantry → Willow [trip C2, connection c-home]
+Back 12:30; 170 minutes away; 115 scheduled wait minutes.
+
+West End (west)
+Origin stop: West End; leave after 08:00; home by 16:00; maximum away 180 min.
+Outbound 10:30–10:45: West End → West End interchange [trip D1, connection d-out-1]
+Outbound 10:51–11:10: West End interchange → Community pantry [trip D2, connection d-out-2]
+Visit 11:10–11:25 at Community pantry
+Return 11:40–11:50: Community pantry → West End interchange [trip D3, connection d-home-1]
+Return 11:56–12:10: West End interchange → West End [trip D4, connection d-home-2]
+Back 12:10; 100 minutes away; 27 scheduled wait minutes.
+
+Orchard (orchard)
+Origin stop: Orchard; leave after 08:00; home by 16:00; maximum away 180 min.
+Outbound 11:20–11:40: Orchard → Community pantry [trip E1, connection e-out]
+Visit 11:40–11:55 at Community pantry
+Return 12:10–12:30: Community pantry → Orchard [trip E2, connection e-home]
+Back 12:30; 70 minutes away; 15 scheduled wait minutes.
+
+Eastbank (east)
+Origin stop: Eastbank; leave after 08:00; home by 16:00; maximum away 180 min.
+Outbound 11:45–12:05: Eastbank → Community pantry [trip F1, connection f-out]
+Visit 12:05–12:20 at Community pantry
+Return 12:35–12:55: Community pantry → Eastbank [trip F2, connection f-home]
+Back 12:55; 70 minutes away; 15 scheduled wait minutes.
+
+South Wharf (wharf)
+Origin stop: South Wharf; leave after 08:00; home by 16:00; maximum away 180 min.
+NO COMPLETE TRIP: Pickup fits, but no scheduled return reaches the origin by its home deadline within the transfer limit.
+
+LIMITATIONS
+Counts represent origins, not people served or real-world impact. Equal staffed duration does not establish fairness. Review every lost origin.
+Best means highest reachable count among tested start times only, then closest to current start, then earlier start; a coarse step may miss better windows. One feasible witness is shown per origin, not a guaranteed itinerary.
+One supplied service-day timetable. No walking, live delays, cancellations, fares, wheelchair accessibility, capacity, demand, or automatic service-calendar / GTFS verification.
+Verify the date, timetable, stop access and local assumptions with operators and the community before changing real opening hours.
+No accounts, telemetry or autosave. This export contains applied data only; unapplied drafts are excluded.

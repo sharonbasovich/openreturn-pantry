@@ -1,5 +1,7 @@
 # OpenReturn
 
+**Decision audit, exact backups and reused route searches, November 8, 2026.** This update adds schedule-burden summaries and hypothetical assumption checks, bounded exact JSON recovery, explicitly restricted CSV exports, and reuse of identical route searches. The cumulative runtime passed 445 tests, independent checks and bounded actual-browser acceptance. See the [current validation receipt](evidence/CUMULATIVE_ACCEPTANCE_20261108.md) and [routing-cache measurements](docs/ROUTING_CACHE.md). Physical-device, assistive-technology and field-usefulness limits remain. The screenshot below is from the earlier version; the current validation receipt documents this update.
+
 **Opening hours only work if the bus home does.**
 
 OpenReturn is an original, local-first prototype for a food-pantry operator comparing opening windows with the **same staffed duration**. It checks the complete scheduled journey: leave an origin, reach the pantry, finish a visit while it is open, and return within the stated time budget. It displays who gains and who loses in the supplied scenario rather than hiding a loss inside a better total.
@@ -27,8 +29,37 @@ Open http://localhost:4193 in an available browser. The app uses JavaScript modu
 3. Open South Wharf to see why an outbound bus alone is not enough.
 4. Raise the transfer buffer from 5 to 10 minutes. Hilltop stays on the same vehicle through its interchange; West End changes vehicles and may lose its connection.
 5. Export the scenario or decision sheet. Invalid input must not replace the current scenario.
+6. Select **Check three assumptions**. The synthetic example falls from 5/7 to 2/7 if the selected 10:30 opening is kept while both the visit and transfer buffer increase. Searching again finds 3/7 at 09:00, which is no gain over current hours under those same changed assumptions.
+7. Inspect the scheduled waiting ranges, each journey's wait breakdown and remaining time allowances. These numbers describe one retained timetable witness, not reliability or delay tolerance. Equal-count best windows need not serve the same origins.
 
 All figures are computed from the input, not a claimed measured impact or forecast.
+
+## Repeated-origin routing work
+
+Origin scenarios at the same stop can share route searches when every relevant constraint matches, without merging their identity, coverage count, gains/losses or journey results. Per-call caches never carry across timetable or setting changes. In one synthetic Node benchmark at the model's maximum connection, origin and grid-window counts, identical-constraint routing took 0.272–0.282 seconds instead of 4.30–4.38 seconds. This is a cache-friendly example, not a general speedup or browser responsiveness guarantee. A distinct-constraint case still took several seconds. The app still computes synchronously and has no cancellation control. See [method, measurements and limits](docs/ROUTING_CACHE.md).
+
+## Decision audit and offline report
+
+The audit separates four kinds of scheduled waiting: before the visit, after the visit, between vehicles, and on-board dwell. For each feasible witness it reports remaining minutes against the away allowance, home deadline, closing time, first return departure and tightest vehicle-change buffer. An absent return or vehicle change is **not applicable**, not zero headroom. Summary ranges exclude infeasible origins; a window with no feasible journeys does not report zero waiting.
+
+Three explicit hypothetical checks add 15 visit minutes, add five transfer-buffer minutes, or do both. Each compares the applied best hours held fixed with a fresh grid search, identifies specific lost and gained origins, and compares the new best against current hours under the **same changed assumptions**. An out-of-bounds hypothesis is labeled not applicable instead of being clamped. Checks never change the applied scenario or draft, and are cleared when new data/settings are applied. They are not an exhaustive stress test or evidence of delay probabilities.
+
+Generate the same decision-sheet text offline without a browser:
+
+```sh
+node scripts/decision-sheet.mjs > decision-sheet.txt
+node scripts/decision-sheet.mjs your-scenario.json > decision-sheet.txt
+```
+
+The terminal report includes all three assumption checks. A browser report includes them only after they have been run for the current applied data; otherwise it explicitly states that they were not run. [Synthetic report example](evidence/decision-sheet-synthetic.txt).
+
+## Exact backup and restricted CSV
+
+Use **scenario JSON** for a complete, lossless backup of applied data. The UTF-8 input/output cap is 4,000,000 bytes, sufficient for every normalized scenario within the v1 model bounds. JSON preserves all supported IDs, including IDs that cannot safely use the CSV helper. Exporting does not include unapplied drafts.
+
+Timetable CSV has a 2,000,000-byte UTF-8 cap and contains connections only, not the complete scenario. CSV refuses IDs containing edge whitespace, control characters, unpaired UTF-16 surrogates, or a leading `=`, `+`, `-` or `@`. It directs you to JSON rather than silently changing an ID, creating an unreimportable file or emitting a formula-leading spreadsheet cell. This restriction applies to every CSV ID column. An unavailable CSV export or format change preserves applied data, drafts and the previous copyable export.
+
+CSV is not a guarantee against spreadsheet auto-conversion: import every ID column as text and verify identities. Prefer JSON for exact storage. See [the export contract and capacity proof](docs/EXPORT_CONTRACT.md).
 
 ## Input and privacy
 
@@ -48,6 +79,6 @@ Coverage alone is not a policy recommendation. An operator must consider the lis
 
 New project work began November 8, 2026 for Code for Change, after its November 5 opening. See [docs/EVENT_AND_PRIOR_ART.md](docs/EVENT_AND_PRIOR_ART.md) for eligibility checks, source links and prior-art boundaries. AI-assisted implementation and review are disclosed. No new routing or fairness algorithm is claimed.
 
-See [evidence/INDEPENDENT_REVIEW.md](evidence/INDEPENDENT_REVIEW.md) for the independent routing checks and [evidence/BROWSER_ACCEPTANCE.md](evidence/BROWSER_ACCEPTANCE.md) for actual Chromium workflow, keyboard, export and narrow-layout checks. All 357 automated tests pass. Browser coverage is limited to the documented environment; physical phones, assistive technology, real timetables and field usefulness remain untested.
+The [original independent routing checks](evidence/INDEPENDENT_REVIEW.md) and [original browser receipt](evidence/BROWSER_ACCEPTANCE.md) remain historical evidence for the earlier version. The [current cumulative receipt](evidence/CUMULATIVE_ACCEPTANCE_20261108.md) covers 445 passing tests, independent routing-cache and export checks, actual Chromium workflows, five synthetic saved-download byte comparisons, keyboard focus and narrow layouts. Node application-state tests use a minimal DOM double; they are separate from the actual browser observations. Physical phones, assistive technology, native leave-warning behavior, native print and field usefulness remain unverified.
 
 This is a prototype, not a submitted event entry or a completed operational pilot.
