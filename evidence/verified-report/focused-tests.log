@@ -1,0 +1,21 @@
+✔ v1: full replay report has exact legacy CLI body and bound hashes (209.665931ms)
+✔ v2: full replay report has exact legacy CLI body and bound hashes (198.598567ms)
+✔ report rejects scenario tampering (2.918372ms)
+✔ report rejects receipt tampering (2.577618ms)
+✔ report rejects template tampering (2.41716ms)
+✔ report rejects source tampering (2.455917ms)
+✔ report rejects missing tampering (1.959752ms)
+✔ report rejects duplicate tampering (1.382808ms)
+✔ report rejects policy tampering (1.756461ms)
+✔ report rejects membership tampering (2.747329ms)
+✔ captured scenario string is read from caller once and used for both replay and report (2.951191ms)
+✔ CLI reads each input once: replacing scenario after read cannot change report body or digest (128.653219ms)
+✔ CLI failures emit no report bytes and only sanitized fixed-code stderr (847.192899ms)
+ℹ tests 13
+ℹ suites 0
+ℹ pass 13
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1560.457584

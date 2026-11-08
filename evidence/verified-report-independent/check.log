@@ -1,0 +1,5 @@
+npm warn Unknown env config "http-proxy". This will stop working in the next major version of npm.
+
+> openreturn@0.2.2 check
+> node --check src/model.mjs && node --check src/journey.mjs && node --check src/app.mjs && node --check src/import.mjs && node --check src/decision.mjs && node --check src/report.mjs && node --check scripts/decision-sheet.mjs && node --check scripts/benchmark-routing-cache.mjs
+

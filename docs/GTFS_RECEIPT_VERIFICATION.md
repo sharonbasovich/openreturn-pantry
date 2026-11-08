@@ -60,3 +60,7 @@ npm run check
 node --check src/verify-gtfs-receipt.mjs
 node --check scripts/verify-gtfs-receipt.mjs
 ```
+
+## Optional same-process report
+
+For report-embedded provenance and binding to the same captured scenario bytes, use the additive [verified GTFS report command](VERIFIED_GTFS_REPORT.md). It calls this full replay verifier before the normal report audit; the existing commands above remain unchanged. This eliminates the separate-process scenario reread, not concurrent feed-directory changes or any authenticity/intent limitation.

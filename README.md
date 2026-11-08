@@ -100,3 +100,7 @@ This corrects a test-verifier blind spot, not a reproduced production-routing er
 The optional [receipt replay checker](docs/GTFS_RECEIPT_VERIFICATION.md) checks exact scenario bytes and every companion receipt field against the original local feed/template. It is a separate, read-only Node command; browser and decision reports do not enforce receipts. Passing confirms replay consistency, not authenticity, freshness, intended date/scope or real-world feasibility.
 
 The optional offline GTFS adapter also offers an explicit [separate-trips block policy](docs/GTFS_SUBSET.md#optional-separate-trips-block-policy): original trip IDs stay separate, block membership is receipt provenance only, and all inter-trip changes retain normal transfer rules. Default receipt1 behavior is unchanged; this is not onboard block support or real-world feasibility evidence.
+
+### Generate a replay-checked offline report
+
+The optional [single-process GTFS report](docs/VERIFIED_GTFS_REPORT.md) performs full local receipt replay and derives the ordinary report from the same captured scenario bytes, with embedded service-date, selection, block-policy and digest provenance. This adds limited replay consistency, not feed authenticity, intended scope, currentness or real-world feasibility. Existing report commands and browser behavior are unchanged.
