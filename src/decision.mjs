@@ -1,9 +1,11 @@
+import { continuationCheck } from './journey.mjs';
 import { validateScenario, optimizeWindows, formatTime } from './model.mjs';
 
 // All quantities describe the engine's retained scheduled witnesses. They do
 // not add constraints or optimize waiting, and they are not delay tolerances.
 function summarizeWindow(scenario, window) {
   const origins = new Map(scenario.origins.map(o => [o.id, o]));
+  const continuesOnBoard = continuationCheck(scenario.connections);
   const journeys = window.results.filter(r => r.reachable).map(result => {
     const origin = origins.get(result.originId), j = result.journey;
     const waits = { beforeVisit: 0, afterVisit: 0, transfers: 0, onBoard: 0 };
@@ -11,7 +13,7 @@ function summarizeWindow(scenario, window) {
     for (const leg of [j.outbound, j.return]) {
       for (let i = 1; i < leg.length; i++) {
         const previous = leg[i - 1], next = leg[i], gap = next.departure - previous.arrival;
-        if (previous.tripId === next.tripId) waits.onBoard += gap;
+        if (continuesOnBoard(previous, next)) waits.onBoard += gap;
         else {
           waits.transfers += gap;
           transferHeadroom.push(gap - scenario.settings.transferMinutes);
@@ -112,7 +114,7 @@ export function decisionAuditLines(audit, sensitivity = null) {
     lines.push(`${label} ${windowLabel(window)}: waits ${rangeLabel(window.waitRange)}; time away ${rangeLabel(window.awayRange)}.`);
     for (const j of window.journeys) lines.push(
       `  ${j.label} (${j.originId}): wait ${j.waitMinutes} = before visit ${j.waits.beforeVisit} + after visit ${j.waits.afterVisit} + transfers ${j.waits.transfers} + on-board dwell ${j.waits.onBoard} min; riding ${j.ridingMinutes} min.`,
-      `  Remaining minutes: away allowance ${j.headroom.away}; home deadline ${j.headroom.home}; closing ${j.headroom.closing}; return departure ${j.headroom.returnDeparture ?? 'not applicable'}; minimum vehicle-change buffer headroom ${j.headroom.transfer ?? 'not applicable'}.`);
+      `  Remaining minutes: away allowance ${j.headroom.away}; home deadline ${j.headroom.home}; closing ${j.headroom.closing}; return departure ${j.headroom.returnDeparture ?? 'not applicable'}; minimum transfer/reboarding buffer headroom ${j.headroom.transfer ?? 'not applicable'}.`);
   }
   lines.push(`Highest-coverage grid starts (${audit.tiedBestStarts.length}): ${audit.tiedBestStarts.map(formatTime).join(', ')}.`,
     'The selected tie-break favors the start closest to current hours, then earlier start. Equal counts can cover different origins or waits.');
