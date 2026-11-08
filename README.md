@@ -94,3 +94,7 @@ This is a prototype, not a submitted event entry or a completed operational pilo
 The exhaustive test oracle now checks same-vehicle reboarding against the full trip chain, including omitted loop legs. `npm test` includes literal witness and fabricated-invalid-witness controls plus 120 deterministic looping timetables. Run `node scripts/verify-oracle-mutations.mjs` for five deliberately faulty local copies that must be detected. No packages or network are used.
 
 This corrects a test-verifier blind spot, not a reproduced production-routing error. Reachability and minimum-away comparisons alone cannot distinguish waiting to reboard from riding the whole loop. See [the oracle correction and scope](evidence/ORACLE_REBOARDING_REVIEW.md). Historical review counts elsewhere describe their original snapshots.
+
+### Check an offline GTFS receipt
+
+The optional [receipt replay checker](docs/GTFS_RECEIPT_VERIFICATION.md) checks exact scenario bytes and every companion receipt field against the original local feed/template. It is a separate, read-only Node command; browser and decision reports do not enforce receipts. Passing confirms replay consistency, not authenticity, freshness, intended date/scope or real-world feasibility.
