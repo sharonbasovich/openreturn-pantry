@@ -30,6 +30,6 @@ Times use 00:00–47:59; quoted commas and quotes follow CSV escaping. CSV impor
 
 ## Witness semantics
 
-A reported reachable origin has an outbound array, pickup start/end, a return array, first departure, home arrival, total time away and non-riding/non-pickup waiting time. A pantry-stop origin has empty travel arrays and spends only its visit duration away. A vehicle change needs the specified buffer; remaining on the same trip does not. A visit resets vehicle state, so the return's first boarding is new.
+A reported reachable origin has an outbound array, pickup start/end, a return array, first departure, home arrival, total time away and non-riding/non-pickup waiting time. A pantry-stop origin has empty travel arrays and spends only its visit duration away. A transfer or reboarding after skipping intervening legs needs the specified buffer. Only consecutive legs in the complete trip chain count as remaining on board; a matching trip ID alone is insufficient. Waiting at a stop while that vehicle loops away and returns is off-board waiting, not on-board dwell. A visit resets vehicle state, so the return's first boarding is new.
 
 The selected per-origin witness minimizes time away, then home-arrival time, followed by stable path ordering. Coverage ties choose the smallest absolute shift from the baseline, then the earlier start. These preferences are deterministic comparison rules, not measures of welfare or fairness.

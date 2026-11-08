@@ -1,3 +1,4 @@
+import { continuationCheck } from './journey.mjs';
 import { SAMPLE } from './sample.mjs';
 import { validateScenario, formatTime } from './model.mjs';
 import { parseScenarioJson, exportScenarioJson, parseTimetableCsv, connectionsToCsv } from './import.mjs';
@@ -132,20 +133,21 @@ function renderSelection() {
   if(!result.reachable||!result.journey){detail.append(node('p',result.reason||'No complete scheduled return journey meets these constraints.','failure'));return;}
   const summary=(window.start===audit.baseline.start?audit.baseline:audit.windows.find(w=>w.start===window.start)).journeys.find(j=>j.originId===origin.id);
   const burden=node('div',undefined,'journey-burden');burden.append(node('p',`${summary.awayMinutes} minutes away · ${summary.waitMinutes} scheduled wait minutes`,'sensitivity-result'),
-    node('p',`Waiting: ${summary.waits.beforeVisit} before the visit + ${summary.waits.afterVisit} after the visit + ${summary.waits.transfers} at vehicle changes + ${summary.waits.onBoard} on board.`));
+    node('p',`Waiting: ${summary.waits.beforeVisit} before the visit + ${summary.waits.afterVisit} after the visit + ${summary.waits.transfers} at transfers / reboardings + ${summary.waits.onBoard} on board.`));
   const margins=node('dl',undefined,'headroom');
-  for(const [key,label] of [['away','Away allowance'],['home','Home deadline'],['closing','Closing time'],['returnDeparture','Return departure'],['transfer','Vehicle-change buffer']]) {
+  for(const [key,label] of [['away','Away allowance'],['home','Home deadline'],['closing','Closing time'],['returnDeparture','Return departure'],['transfer','Transfer / reboarding buffer']]) {
     const value=summary.headroom[key], row=node('div');row.append(node('dt',label),node('dd',value===null?'Not applicable':`${value} min remaining`,value===0?'loss':''));margins.append(row);
   }
   burden.append(margins,node('p','Remaining minutes describe this scheduled witness. They are not delay tolerances or a reliability score. Waits are not minimized separately.','hint'));detail.append(burden);
   const j=result.journey;const list=node('ol',undefined,'timeline');
   const stopName=id=>scenario.stops.find(s=>s.id===id)?.name??id;
   const add=(title,text,cls='')=>{const li=node('li',undefined,cls);li.append(node('strong',title),node('span',text));list.append(li);};
-  let previousEnd=null, previousTrip=null;
-  for(const c of j.outbound){if(previousEnd!==null&&c.departure>previousEnd)add(`${formatTime(previousEnd)}–${formatTime(c.departure)} · ${previousTrip===c.tripId?'On-board dwell':'Transfer / wait'}`,`${c.departure-previousEnd} scheduled minutes at ${stopName(c.from)}`);add(`${formatTime(c.departure)}–${formatTime(c.arrival)} · Outbound`,`${stopName(c.from)} → ${stopName(c.to)} · Trip ${c.tripId}`);previousEnd=c.arrival;previousTrip=c.tripId;}
+  const continuesOnBoard=continuationCheck(scenario.connections);
+  let previousEnd=null, previousConnection=null;
+  for(const c of j.outbound){if(previousEnd!==null&&c.departure>previousEnd)add(`${formatTime(previousEnd)}–${formatTime(c.departure)} · ${continuesOnBoard(previousConnection,c)?'On-board dwell':'Transfer / reboarding wait'}`,`${c.departure-previousEnd} scheduled minutes at ${stopName(c.from)}`);add(`${formatTime(c.departure)}–${formatTime(c.arrival)} · Outbound`,`${stopName(c.from)} → ${stopName(c.to)} · Trip ${c.tripId}`);previousEnd=c.arrival;previousConnection=c;}
   if(previousEnd!==null&&j.pickupStart>previousEnd)add(`${formatTime(previousEnd)}–${formatTime(j.pickupStart)} · Wait before visit`,`${j.pickupStart-previousEnd} minutes at the pantry stop`);
-  add(`${formatTime(j.pickupStart)}–${formatTime(j.pickupEnd)} · Pantry visit`,`${scenario.settings.visitMinutes} minutes, inside the selected opening window`,'visit');previousEnd=j.pickupEnd;previousTrip=null;
-  for(const c of j.return){if(c.departure>previousEnd)add(`${formatTime(previousEnd)}–${formatTime(c.departure)} · ${previousTrip===c.tripId?'On-board dwell':'Wait / connection'}`,`${c.departure-previousEnd} scheduled minutes at ${stopName(c.from)}`);add(`${formatTime(c.departure)}–${formatTime(c.arrival)} · Return`,`${stopName(c.from)} → ${stopName(c.to)} · Trip ${c.tripId}`);previousEnd=c.arrival;previousTrip=c.tripId;}
+  add(`${formatTime(j.pickupStart)}–${formatTime(j.pickupEnd)} · Pantry visit`,`${scenario.settings.visitMinutes} minutes, inside the selected opening window`,'visit');previousEnd=j.pickupEnd;previousConnection=null;
+  for(const c of j.return){if(c.departure>previousEnd)add(`${formatTime(previousEnd)}–${formatTime(c.departure)} · ${continuesOnBoard(previousConnection,c)?'On-board dwell':previousConnection?'Transfer / reboarding wait':'Wait / connection'}`,`${c.departure-previousEnd} scheduled minutes at ${stopName(c.from)}`);add(`${formatTime(c.departure)}–${formatTime(c.arrival)} · Return`,`${stopName(c.from)} → ${stopName(c.to)} · Trip ${c.tripId}`);previousEnd=c.arrival;previousConnection=c;}
   add(`${formatTime(j.arrive)} · Back at origin stop`,`${j.awayMinutes} minutes away · ${j.waitMinutes} scheduled wait minutes`);
   detail.append(list,node('p','One feasible scheduled witness, not a guaranteed or personally recommended itinerary.','hint'));
 }
