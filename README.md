@@ -82,3 +82,9 @@ New project work began November 8, 2026 for Code for Change, after its November 
 The [original independent routing checks](evidence/INDEPENDENT_REVIEW.md) and [original browser receipt](evidence/BROWSER_ACCEPTANCE.md) remain historical evidence for the earlier version. The [current cumulative receipt](evidence/CUMULATIVE_ACCEPTANCE_20261108.md) covers 445 passing tests, independent routing-cache and export checks, actual Chromium workflows, five synthetic saved-download byte comparisons, keyboard focus and narrow layouts. Node application-state tests use a minimal DOM double; they are separate from the actual browser observations. Physical phones, assistive technology, native leave-warning behavior, native print and field usefulness remain unverified.
 
 This is a prototype, not a submitted event entry or a completed operational pilot.
+
+### Reboarding oracle regression checks
+
+The exhaustive test oracle now checks same-vehicle reboarding against the full trip chain, including omitted loop legs. `npm test` includes literal witness and fabricated-invalid-witness controls plus 120 deterministic looping timetables. Run `node scripts/verify-oracle-mutations.mjs` for five deliberately faulty local copies that must be detected. No packages or network are used.
+
+This corrects a test-verifier blind spot, not a reproduced production-routing error. Reachability and minimum-away comparisons alone cannot distinguish waiting to reboard from riding the whole loop. See [the oracle correction and scope](evidence/ORACLE_REBOARDING_REVIEW.md). Historical review counts elsewhere describe their original snapshots.
