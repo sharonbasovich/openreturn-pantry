@@ -1,5 +1,7 @@
 # OpenReturn
 
+**Integrated source preview, November 8, 2026.** This branch now includes main’s reviewed reboarding-report correction and preserves cancelable worker calculations. The integrated source passes 481 tests, independent comparisons and bounded actual-browser checks. See the [integration receipt](evidence/RESPONSIVE_INTEGRATION_20261108.md) for exact scope and limits. It remains a source preview, not a deployed update.
+
 **Responsiveness source preview, November 8, 2026.** Comparisons and assumption checks use disposable module workers with a visible Cancel control. This source preview is not a deployed update. Read the [cancellation contract](docs/RESPONSIVE_CALCULATIONS.md) and [dated validation receipt](evidence/RESPONSIVE_ACCEPTANCE_20261108.md) for the exact tested scope and remaining limits.
 
 **Earlier v0.2.2 update, November 8, 2026.** That version added schedule-burden summaries and hypothetical assumption checks, bounded exact JSON recovery, explicitly restricted CSV exports, and reuse of identical route searches. That cumulative runtime passed 445 tests, independent checks and bounded actual-browser acceptance. See the [historical v0.2.2 validation receipt](evidence/CUMULATIVE_ACCEPTANCE_20261108.md) and [routing-cache measurements](docs/ROUTING_CACHE.md). Physical-device, assistive-technology and field-usefulness limits remain. The screenshot below is from the earlier version; the historical receipt documents that version.

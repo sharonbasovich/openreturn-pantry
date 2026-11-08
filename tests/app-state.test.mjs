@@ -160,6 +160,24 @@ test('export failures preserve state and provide exact JSON recovery',async t=>{
   });
 });
 
+import { OUTBOUND_LOOP, RETURN_LOOP } from './reboarding-fixtures.mjs';
+test('reboarding is shown honestly in rendered journey text and report fallback',async()=>{
+  $('import-kind').value='json';await $('import-kind').emit('change');
+  for(const fixture of [OUTBOUND_LOOP,RETURN_LOOP]) {
+    $('import-text').value=JSON.stringify(fixture);await $('import-text').emit('input');
+    const pending=$('import-apply').click();await flush();await $('confirm-accept').click();await pending;
+    assert.match($('journey-detail').textContent,/Transfer \/ reboarding wait/);
+    assert.doesNotMatch($('journey-detail').textContent,/On-board dwell/);
+    assert.match($('journey-detail').textContent,/Transfer \/ reboarding buffer/);
+    assert.match(await exportReport(),/minimum transfer\/reboarding buffer headroom/);
+  }
+  const fixture=structuredClone(OUTBOUND_LOOP);fixture.settings.maxTransfers=0;
+  $('import-text').value=JSON.stringify(fixture);await $('import-text').emit('input');
+  const pending=$('import-apply').click();await flush();await $('confirm-accept').click();await pending;
+  assert.match($('journey-detail').textContent,/On-board dwell/);
+  assert.doesNotMatch($('journey-detail').textContent,/Transfer \/ reboarding wait/);
+});
+
 test('synthetic worker interruption keeps application transactions intact',async t=>{
   const snapshot=()=>({comparison:$('comparison').textContent,journey:$('journey-detail').textContent,checks:$('sensitivity-results').textContent,draft:$('import-text').value,field:$('field-visitMinutes').value,export:$('export-text').value});
   const last=()=>SyntheticWorker.workers.at(-1);

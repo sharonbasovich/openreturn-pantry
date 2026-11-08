@@ -3,12 +3,23 @@ import assert from 'node:assert/strict';
 import {performance} from 'node:perf_hooks';
 import {createCalculator,CalculationCancelled} from '../src/calculation.mjs';
 import {SAMPLE} from '../src/sample.mjs';
+import {OUTBOUND_LOOP,RETURN_LOOP} from '../tests/reboarding-fixtures.mjs';
 import {auditDecision,auditSensitivity} from '../src/decision.mjs';
 import {validateScenario} from '../src/model.mjs';
 const workers=[];
 function factory(){const w=new Worker(new URL('./worker-thread-bridge.mjs',import.meta.url),{workerData:{module:new URL('../src/calculation-worker.mjs',import.meta.url).href}});const adapter={onmessage:null,onerror:null,onmessageerror:null,terminated:false,postMessage:m=>w.postMessage(m),terminate(){this.terminated=true;w.terminate();}};w.on('message',data=>adapter.onmessage?.({data}));w.on('error',error=>adapter.onerror?.(error));w.on('messageerror',error=>adapter.onmessageerror?.(error));workers.push(adapter);return adapter;}
 const calculator=createCalculator(factory),out={node:process.version,kind:'Genuine Node worker_threads with browser-worker event bridge, not native browser acceptance',checks:[]};
 for(const kind of ['comparison','sensitivity']){const started=performance.now();const result=await calculator.run(kind,SAMPLE);const expected=kind==='comparison'?(()=>{const normalized=validateScenario(SAMPLE),decision=auditDecision(normalized);return {normalized,result:decision.comparison,decision};})():auditSensitivity(SAMPLE);assert.deepEqual(result,expected);out.checks.push({kind,parity:true,elapsedIncludingSyncOracleMs:performance.now()-started,resultJsonBytes:Buffer.byteLength(JSON.stringify(result)),disposed:workers.at(-1).terminated});}
+// Main's reboarding fix must survive the real worker structured-clone boundary.
+for(const [label,scenario] of [['outbound reboarding',OUTBOUND_LOOP],['return reboarding',RETURN_LOOP]]) {
+  for(const kind of ['comparison','sensitivity']) {
+    const result=await calculator.run(kind,scenario);
+    const normalized=validateScenario(scenario),decision=auditDecision(normalized);
+    const expected=kind==='comparison'?{normalized,result:decision.comparison,decision}:auditSensitivity(scenario);
+    assert.deepEqual(result,expected);
+    out.checks.push({kind:`${label} ${kind}`,parity:true,disposed:workers.at(-1).terminated});
+  }
+}
 const large={version:1,title:'Independent capacity fixture',serviceDay:'2026-11-09',dataKind:'synthetic',stops:[{id:'a',name:'Origin'},{id:'p',name:'Pantry'}],pantryStop:'p',origins:Array.from({length:24},(_,i)=>({id:`o${i}`,stopId:'a',label:`Origin ${i}`,leaveAfter:0,homeBy:2879,maxAwayMinutes:2879})),connections:[],settings:{baselineStart:600,earliestStart:0,latestStart:1410,openMinutes:120,visitMinutes:15,stepMinutes:30,transferMinutes:5,maxTransfers:3}};
 for(let i=0;i<600;i++){const d=2*i;large.connections.push({id:`out${i}`,tripId:`out${i}`,from:'a',to:'p',departure:d,arrival:d+1},{id:`back${i}`,tripId:`back${i}`,from:'p',to:'a',departure:d+2,arrival:d+3});}
 let ticks=0;const interval=setInterval(()=>ticks++,5);const started=performance.now();const pending=calculator.run('sensitivity',large);await new Promise(r=>setTimeout(r,60));calculator.cancel();await assert.rejects(pending,CalculationCancelled);clearInterval(interval);out.checks.push({kind:'capacity sensitivity canceled',elapsedMs:performance.now()-started,timerTicks:ticks,requestJsonBytes:Buffer.byteLength(JSON.stringify(large)),disposed:workers.at(-1).terminated});assert(ticks>0);assert.equal(calculator.busy,false);
