@@ -110,3 +110,7 @@ All validation finishes before the CLI reserves a fresh output directory. Existi
 ## Verification scope
 
 See [the synthetic adapter validation receipt](../evidence/GTFS_SUBSET_VALIDATION.md). Browser code, routing model, existing import helpers and package commands are unchanged. There is no real-feed, live-transit, field-usefulness, physical-device or new browser acceptance claim for this feature.
+
+### CLI artifact compatibility
+
+The CLI validates template JSON and both serialized outputs against the [offline replay JSON contract](GTFS_RECEIPT_VERIFICATION.md#producer-consistency) before creating a directory. Receipt output must fit 4,000,000 UTF-8 bytes including its final LF; source bounds alone do not guarantee this. Oversized evidence is rejected, never trimmed. Output must be outside the source feed, including through ancestor path aliases. Existing unambiguous accepted output bytes and the object-based adapter API are unchanged.

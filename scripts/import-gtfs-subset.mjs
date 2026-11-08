@@ -1,10 +1,11 @@
 // Optional Node-only adapter. No network, ZIP extraction, packages or browser changes.
 import {constants} from 'node:fs';
-import {lstat,open,readdir,mkdir,unlink,rmdir} from 'node:fs/promises';
-import {join} from 'node:path';
+import {lstat,open,readdir,mkdir,unlink,rmdir,realpath} from 'node:fs/promises';
+import {join,dirname} from 'node:path';
 import {adaptGtfsSubset,GTFS_LIMITS,GTFS_FILE_NAMES} from '../src/gtfs-subset.mjs';
 import {exportScenarioJson} from '../src/import.mjs';
 import {createHash} from 'node:crypto';
+import {strictJson,RECEIPT_LIMITS} from '../src/gtfs-artifact-json.mjs';
 
 const usage='Usage: node scripts/import-gtfs-subset.mjs --feed DIR --date YYYY-MM-DD (--route ID [--route ID ...] | --trip ID [--trip ID ...]) --template FILE --out NEW_DIR';
 function argumentsFor(args) {
@@ -56,12 +57,18 @@ async function run(args) {
     total+=Buffer.byteLength(files[name],'utf8');
   }
   const templateText=await boundedText(values['--template'],GTFS_LIMITS.templateBytes,'Template');
-  let template;
-  try {template=JSON.parse(templateText.replace(/^\uFEFF/,''));} catch {throw new Error('Template is not valid JSON.');}
+  const template=strictJson(templateText,GTFS_LIMITS.templateBytes);
   const {scenario,receipt}=adaptGtfsSubset({files,serviceDay:values['--date'],...scope,template});
   receipt.templateInput={bytes:Buffer.byteLength(templateText,'utf8'),sha256:createHash('sha256').update(templateText,'utf8').digest('hex')};
   const outputs=[['scenario.json',exportScenarioJson(scenario)+'\n'],['receipt.json',JSON.stringify(receipt,null,2)+'\n']];
+  // Apply the replay reader's JSON/UTF-8 byte contract to the exact serialized
+  // pair (including final LF), before any output directory or file is created.
+  strictJson(outputs[0][1],RECEIPT_LIMITS.scenarioBytes);
+  strictJson(outputs[1][1],RECEIPT_LIMITS.receiptBytes);
   // Validate everything before reserving a fresh directory. Never overwrite it.
+  // mkdir is nonrecursive: its existing parent must not be the source feed.
+  // Resolve ancestor aliases too; this is not protection against concurrent moves.
+  if(await realpath(dirname(out))===await realpath(feed)) throw new Error('Output directory must be outside the source feed.');
   await mkdir(out,{mode:0o700});
   const created=[];
   try {
