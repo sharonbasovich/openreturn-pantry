@@ -1,6 +1,8 @@
 # OpenReturn
 
-**Decision audit, exact backups and reused route searches, November 8, 2026.** This update adds schedule-burden summaries and hypothetical assumption checks, bounded exact JSON recovery, explicitly restricted CSV exports, and reuse of identical route searches. The cumulative runtime passed 445 tests, independent checks and bounded actual-browser acceptance. See the [current validation receipt](evidence/CUMULATIVE_ACCEPTANCE_20261108.md) and [routing-cache measurements](docs/ROUTING_CACHE.md). Physical-device, assistive-technology and field-usefulness limits remain. The screenshot below is from the earlier version; the current validation receipt documents this update.
+**Responsiveness source preview, November 8, 2026.** Comparisons and assumption checks use disposable module workers with a visible Cancel control. This source preview is not a deployed update. Read the [cancellation contract](docs/RESPONSIVE_CALCULATIONS.md) and [dated validation receipt](evidence/RESPONSIVE_ACCEPTANCE_20261108.md) for the exact tested scope and remaining limits.
+
+**Earlier v0.2.2 update, November 8, 2026.** That version added schedule-burden summaries and hypothetical assumption checks, bounded exact JSON recovery, explicitly restricted CSV exports, and reuse of identical route searches. That cumulative runtime passed 445 tests, independent checks and bounded actual-browser acceptance. See the [historical v0.2.2 validation receipt](evidence/CUMULATIVE_ACCEPTANCE_20261108.md) and [routing-cache measurements](docs/ROUTING_CACHE.md). Physical-device, assistive-technology and field-usefulness limits remain. The screenshot below is from the earlier version; the historical receipt documents that version.
 
 **Opening hours only work if the bus home does.**
 
@@ -36,7 +38,7 @@ All figures are computed from the input, not a claimed measured impact or foreca
 
 ## Repeated-origin routing work
 
-Origin scenarios at the same stop can share route searches when every relevant constraint matches, without merging their identity, coverage count, gains/losses or journey results. Per-call caches never carry across timetable or setting changes. In one synthetic Node benchmark at the model's maximum connection, origin and grid-window counts, identical-constraint routing took 0.272–0.282 seconds instead of 4.30–4.38 seconds. This is a cache-friendly example, not a general speedup or browser responsiveness guarantee. A distinct-constraint case still took several seconds. The app still computes synchronously and has no cancellation control. See [method, measurements and limits](docs/ROUTING_CACHE.md).
+Origin scenarios at the same stop can share route searches when every relevant constraint matches, without merging their identity, coverage count, gains/losses or journey results. Per-call caches never carry across timetable or setting changes. In one synthetic Node benchmark at the model's maximum connection, origin and grid-window counts, identical-constraint routing took 0.272–0.282 seconds instead of 4.30–4.38 seconds. This is a cache-friendly example, not a general speedup or browser responsiveness guarantee. A distinct-constraint case still took several seconds. This preview runs browser comparisons and checks in a module worker; Cancel terminates the job while keeping the last applied state. The pure model and CLI APIs remain synchronous. See [method, measurements and limits](docs/ROUTING_CACHE.md).
 
 ## Decision audit and offline report
 
@@ -65,7 +67,7 @@ CSV is not a guarantee against spreadsheet auto-conversion: import every ID colu
 
 The scenario format is documented in [docs/DATA_FORMAT.md](docs/DATA_FORMAT.md). Paste JSON to replace a complete scenario, or select CSV to replace only its timetable connections while retaining its existing stops, origins and settings. Both modes require validation and confirmation before replacement. CSV must describe an already selected service-day timetable; it does not infer or verify the retained service-day label. **This is not a GTFS importer.** Do not paste an unfiltered GTFS feed and assume its service calendars, pickup restrictions or transfers have been interpreted.
 
-Application code makes no network requests, uses no analytics, and does not store scenario content in localStorage. The server hosting the app may receive ordinary page requests. Keep anonymous stop labels and scenario IDs, not client names, home addresses, or sensitive demographic information. Explicit exported files remain on the device where they are saved. Reloading discards unsaved work.
+Application code sends no scenario data to network APIs, uses no analytics, and does not store scenario content in localStorage. Loading the page and its module workers makes ordinary source-resource requests to the serving host. The server hosting the app may receive ordinary page requests. Keep anonymous stop labels and scenario IDs, not client names, home addresses, or sensitive demographic information. Explicit exported files remain on the device where they are saved. Reloading discards unsaved work.
 
 ## Model and limitations
 
@@ -79,6 +81,9 @@ Coverage alone is not a policy recommendation. An operator must consider the lis
 
 New project work began November 8, 2026 for Code for Change, after its November 5 opening. See [docs/EVENT_AND_PRIOR_ART.md](docs/EVENT_AND_PRIOR_ART.md) for eligibility checks, source links and prior-art boundaries. AI-assisted implementation and review are disclosed. No new routing or fairness algorithm is claimed.
 
-The [original independent routing checks](evidence/INDEPENDENT_REVIEW.md) and [original browser receipt](evidence/BROWSER_ACCEPTANCE.md) remain historical evidence for the earlier version. The [current cumulative receipt](evidence/CUMULATIVE_ACCEPTANCE_20261108.md) covers 445 passing tests, independent routing-cache and export checks, actual Chromium workflows, five synthetic saved-download byte comparisons, keyboard focus and narrow layouts. Node application-state tests use a minimal DOM double; they are separate from the actual browser observations. Physical phones, assistive technology, native leave-warning behavior, native print and field usefulness remain unverified.
+The [original independent routing checks](evidence/INDEPENDENT_REVIEW.md) and [original browser receipt](evidence/BROWSER_ACCEPTANCE.md) remain historical evidence for the earlier version. The [historical v0.2.2 cumulative receipt](evidence/CUMULATIVE_ACCEPTANCE_20261108.md) covers 445 passing tests, independent routing-cache and export checks, actual Chromium workflows, five synthetic saved-download byte comparisons, keyboard focus and narrow layouts. Node application-state tests use a minimal DOM double; they are separate from the actual browser observations. Physical phones, assistive technology, native leave-warning behavior, native print and field usefulness remain unverified.
 
-This is a prototype, not a submitted event entry or a completed operational pilot.
+For this responsiveness preview, run `npm run verify:workers` in addition to `npm test` and `npm run check`. The worker checks use genuine Node worker threads plus a browser-message bridge and synthetic protocol doubles; they do not substitute for the separately documented browser observations.
+
+This is a source preview, not a deployed update, submitted event entry or completed operational pilot.
+

@@ -1,7 +1,8 @@
 import { SAMPLE } from './sample.mjs';
 import { validateScenario, formatTime } from './model.mjs';
 import { parseScenarioJson, exportScenarioJson, parseTimetableCsv, connectionsToCsv } from './import.mjs';
-import { auditDecision, auditSensitivity, rangeLabel } from './decision.mjs';
+import { rangeLabel } from './decision.mjs';
+import { createCalculator, CalculationCancelled } from './calculation.mjs';
 
 import { buildDecisionSheet, SETTINGS_FIELDS as fields } from './report.mjs';
 
@@ -32,25 +33,50 @@ for (const [key,label,type] of fields) {
 function populateFields() { for(const [key,,type] of fields) $(`field-${key}`).value=type==='time'?timeInput(scenario.settings[key]):scenario.settings[key]; settingsDirty=false; }
 function currentInput(kind = inputKind) { return kind==='json'?exportScenarioJson(scenario):connectionsToCsv(scenario.connections); }
 function populateData() { $('import-text').value=currentInput();dataDirty=false; }
-async function prepare(value, returnFocus = document.activeElement) {
-  const normalized=validateScenario(value);
+const calculator=createCalculator();
+const cancelButton=$('cancel-calculation');
+cancelButton.disabled=true;
+$('calculation-bar').hidden=true;
+let operationPending=false;
+// No result-dependent actions before initial success. Reset is the explicit retry.
+const initialControls=[...document.querySelectorAll('button,input,select,textarea')].filter(el=>el!==$('reset')&&el!==cancelButton);
+const initialDisabled=initialControls.map(el=>el.disabled);
+initialControls.forEach(el=>{el.disabled=true;});
+function enableInitializedControls() {
+  if(scenario)return;
+  initialControls.forEach((el,i)=>{el.disabled=initialDisabled[i];});
+}
+cancelButton.addEventListener('click',()=>calculator.cancel());
+async function calculate(kind,value,returnFocus=document.activeElement) {
   const controls=[...document.querySelectorAll('button,input,select,textarea')];
-  const previous=controls.map(el=>el.disabled); controls.forEach(el=>{el.disabled=true;});
-  $('planner').setAttribute('aria-busy','true');status('settings-status','Calculating scheduled return journeys…');
-  try {
-    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-    const decision=auditDecision(normalized); return {normalized,result:decision.comparison,decision};
-  } finally {
-    controls.forEach((el,i)=>{el.disabled=previous[i];});$('planner').removeAttribute('aria-busy');
-    // Disabling the focused control sends focus to body. Restore it only if the
-    // user has not moved elsewhere and no modal has taken ownership of focus.
+  const previous=controls.map(el=>el.disabled);
+  // Browsers may defer blurring a newly disabled control. Capture ownership
+  // before disabling rather than relying on activeElement already being body.
+  const focusedBefore=document.activeElement;
+  const moveFocus=controls.includes(focusedBefore)||!focusedBefore||focusedBefore===document.body||focusedBefore===document.documentElement;
+  controls.forEach(el=>{el.disabled=true;});cancelButton.disabled=false;
+  $('calculation-bar').hidden=false;
+  $('calculation-status').textContent=kind==='sensitivity'?'Checking assumptions… Applied results and drafts are unchanged.':'Calculating comparison… Applied results and drafts are unchanged.';
+  if(moveFocus&&!document.querySelector('dialog[open]'))cancelButton.focus({preventScroll:true});
+  const region=kind==='sensitivity'?'assumption-check':'planner';
+  const statusId=kind==='sensitivity'?'sensitivity-status':'settings-status';
+  $(region).setAttribute('aria-busy','true');
+  status(statusId,kind==='sensitivity'?'Checking three hypothetical changes against the applied data…':'Calculating scheduled return journeys…');
+  try {return await calculator.run(kind,value);}
+  finally {
+    controls.forEach((el,i)=>{el.disabled=previous[i];});cancelButton.disabled=true;
+    $(region).removeAttribute('aria-busy');
+    $('calculation-bar').hidden=true;
     const active=document.activeElement;
-    if (returnFocus?.isConnected && !returnFocus.disabled &&
-        (!active || active===document.body || active===document.documentElement) &&
-        !document.querySelector('dialog[open]')) returnFocus.focus({preventScroll:true});
+    if(returnFocus?.isConnected&&!returnFocus.disabled&&
+       (!active||active===document.body||active===document.documentElement||active===cancelButton)&&
+       !document.querySelector('dialog[open]'))returnFocus.focus({preventScroll:true});
   }
 }
+function prepare(value,returnFocus) {return calculate('comparison',validateScenario(value),returnFocus);}
+function calculationError(error) {return error instanceof CalculationCancelled?error.message:`Calculation failed: ${error.message} No changes were applied.`;}
 function commit(prepared, { replaceDraft = true } = {}) {
+  enableInitializedControls();
   scenario=prepared.normalized;comparison=prepared.result;audit=prepared.decision;sensitivity=null;selectedStart=comparison.best.start;
   if(!scenario.origins.some(o=>o.id===selectedOrigin))selectedOrigin=scenario.origins[0]?.id;
   populateFields();if(replaceDraft)populateData();render();
@@ -101,17 +127,11 @@ function renderSensitivity() {
 }
 
 $('check-assumptions').addEventListener('click',async()=>{
-  const initiator=$('check-assumptions'), controls=[...document.querySelectorAll('button,input,select,textarea')];
-  const previous=controls.map(el=>el.disabled);controls.forEach(el=>{el.disabled=true;});
-  $('assumption-check').setAttribute('aria-busy','true');status('sensitivity-status','Checking three hypothetical changes against the applied data…');
-  try {
-    await new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve)));
-    sensitivity=auditSensitivity(scenario);renderSensitivity();
-  } catch(error) {status('sensitivity-status',`Checks failed: ${error.message}`,true);}
-  finally {
-    controls.forEach((el,i)=>{el.disabled=previous[i];});$('assumption-check').removeAttribute('aria-busy');
-    if(!document.querySelector('dialog[open]')&&(!document.activeElement||document.activeElement===document.body||document.activeElement===document.documentElement))initiator.focus({preventScroll:true});
-  }
+  if(operationPending||!scenario)return;
+  operationPending=true;
+  try {sensitivity=await calculate('sensitivity',scenario,$('check-assumptions'));renderSensitivity();}
+  catch(error){status('sensitivity-status',calculationError(error),!(error instanceof CalculationCancelled));}
+  finally{operationPending=false;}
 });
 function renderSelection() {
   const focusedOrigin=$('origin-list').contains(document.activeElement)?document.activeElement.dataset.originId:undefined;
@@ -160,8 +180,10 @@ function confirmReplace(message, returnFocus = document.activeElement) {
 }
 $('settings-form').addEventListener('submit',async event=>{
   event.preventDefault();
+  if(operationPending||!scenario)return;operationPending=true;
   try {const next=clone(scenario);for(const [key,,type]of fields)next.settings[key]=readField(key,type);const prepared=await prepare(next,event.submitter??document.activeElement);commit(prepared,{replaceDraft:!dataDirty});workingChanged=true;status('settings-status','Applied. Comparison and journey witnesses updated.');if(dataDirty)status('import-status','Your unapplied data draft is preserved; it may contain older settings.');}
-  catch(error){status('settings-status',error.message,true);}
+  catch(error){status('settings-status',calculationError(error),!(error instanceof CalculationCancelled));}
+  finally{operationPending=false;}
 });
 $('import-text').addEventListener('input',()=>{dataDirty=true;status('import-status','Unapplied draft. Your current comparison is unchanged.');});
 $('import-kind').addEventListener('change',async()=>{
@@ -181,14 +203,24 @@ $('load-current').addEventListener('click',async()=>{
   $('import-text').value=replacement;dataDirty=false;status('import-status','Current applied data loaded.');
 });
 $('import-apply').addEventListener('click',async()=>{
+  if(operationPending||!scenario)return;operationPending=true;
+  try {
   const returnFocus=$('import-apply'); // Preserve the initiator before prepare temporarily disables controls.
   let prepared;
   try{const next=inputKind==='json'?parseScenarioJson($('import-text').value):{...clone(scenario),connections:parseTimetableCsv($('import-text').value),dataKind:'user-supplied'};prepared=await prepare(next,returnFocus);}
   catch(error){status('settings-status',settingsDirty?'Unapplied settings remain. Results still show the last applied settings.':'');status('import-status',`Not imported: ${error.message} Your draft and current comparison are preserved.`,true);return;}
   if(!await confirmReplace(`Replace the current scenario with this validated ${inputKind.toUpperCase()} input?${settingsDirty?' Unapplied settings edits will be discarded.':''} Export first if you want to keep the current scenario.`,returnFocus)){status('settings-status',settingsDirty?'Unapplied settings remain. Results still show the last applied settings.':'');status('import-status','Import cancelled. Draft and current work preserved.');return;}
   commit(prepared);workingChanged=true;status('settings-status','');status('import-status','Validated and imported. Review all assumptions before using these results.');
+  } finally {operationPending=false;}
 });
-$('reset').addEventListener('click',async()=>{if((workingChanged||settingsDirty||dataDirty)&&!await confirmReplace('Resetting replaces the applied scenario and all unapplied edits with the synthetic example. Export first to keep your current scenario.',$('reset')))return;try{commit(await prepare(clone(SAMPLE),$('reset')));workingChanged=false;status('settings-status','Synthetic example restored.');status('import-status','');}catch(error){status('settings-status',error.message,true);}});
+$('reset').addEventListener('click',async()=>{
+  if(operationPending)return;operationPending=true;
+  try {
+    if((workingChanged||settingsDirty||dataDirty)&&!await confirmReplace('Resetting replaces the applied scenario and all unapplied edits with the synthetic example. Export first to keep your current scenario.',$('reset')))return;
+    commit(await prepare(clone(SAMPLE),$('reset')));workingChanged=false;status('settings-status','Synthetic example restored.');status('import-status','');
+  }catch(error){status('settings-status',calculationError(error),!(error instanceof CalculationCancelled));}
+  finally{operationPending=false;}
+});
 
 function exportData(kind) {
   let text;
@@ -205,4 +237,7 @@ function exportData(kind) {
 $('export-report').addEventListener('click',()=>exportData('txt'));
 $('export-json').addEventListener('click',()=>exportData('json'));$('export-csv').addEventListener('click',()=>exportData('csv'));
 window.addEventListener('beforeunload',event=>{if(workingChanged||settingsDirty||dataDirty){event.preventDefault();event.returnValue='';}});
-try {commit(await prepare(clone(SAMPLE)));status('settings-status','');} catch(error) {status('settings-status',`Unable to initialize the scenario: ${error.message}`,true);}
+operationPending=true;
+try {commit(await prepare(clone(SAMPLE),$('reset')));status('settings-status','');}
+catch(error) {status('settings-status',`${calculationError(error)} Select Reset synthetic example to retry.`,!(error instanceof CalculationCancelled));}
+finally {operationPending=false;}

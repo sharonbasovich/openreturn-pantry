@@ -36,3 +36,10 @@
 .headroom div{min-width:0}.headroom dt{font-size:11px}.headroom dd{margin:4px 0 0;font-weight:650;font-size:13px}
 @media(max-width:720px){.sensitivity-grid{grid-template-columns:minmax(0,1fr)}.headroom{grid-template-columns:minmax(0,1fr)}}
 @media print{#check-assumptions{display:none}.sensitivity-grid{display:block}.sensitivity-card{break-inside:avoid;margin-bottom:10px}.journey-burden{background:#fff}}
+
+/* Remains reachable when a long job starts below the fold. */
+.calculation-bar{position:fixed;z-index:50;bottom:1rem;left:50%;transform:translateX(-50%);width:min(42rem,calc(100% - 2rem));box-sizing:border-box;display:flex;align-items:center;justify-content:space-between;gap:1rem;padding:1rem;background:#fffdf5;color:#173f35;border:2px solid #173f35;border-radius:.6rem;box-shadow:0 3px 20px #0003}
+.calculation-bar[hidden]{display:none}
+.calculation-bar .button{flex-shrink:0}
+@media(max-width:480px){.calculation-bar{align-items:stretch;flex-direction:column;gap:.5rem;padding:.75rem}}
+@media print{.calculation-bar{display:none!important}}
