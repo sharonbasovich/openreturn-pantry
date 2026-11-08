@@ -10,6 +10,10 @@ The built-in timetable is entirely synthetic. No result is evidence that real pe
 
 ![OpenReturn comparing two equal-duration opening windows in the synthetic example](evidence/desktop-comparison.jpg)
 
+## Offline-distribution technical preview
+
+The optional build produces `dist/openreturn-offline.html`, a self-contained copy of the accepted app with no external source requests. Opening this generated file needs no Node installation or local server. Actual local-file browser acceptance is still pending; the cloud test browser rejected file URLs before loading it. See [offline build, provenance and acceptance limits](docs/OFFLINE_PACKAGE.md). The original source workflow below is unchanged.
+
 ## Run
 
 Node 24+ is used for tests. The application is buildless and has no third-party runtime dependencies.

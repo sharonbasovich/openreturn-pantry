@@ -8,6 +8,11 @@
     "check": "node --check src/model.mjs && node --check src/journey.mjs && node --check src/app.mjs && node --check src/import.mjs && node --check src/decision.mjs && node --check src/report.mjs && node --check scripts/decision-sheet.mjs && node --check scripts/benchmark-routing-cache.mjs",
     "serve": "python3 -m http.server 4193",
     "report": "node scripts/decision-sheet.mjs",
-    "benchmark:cache": "node scripts/benchmark-routing-cache.mjs"
+    "benchmark:cache": "node scripts/benchmark-routing-cache.mjs",
+    "build:offline": "node scripts/build-offline.mjs",
+    "test:offline": "node --test tests/offline-package.check.mjs"
+  },
+  "devDependencies": {
+    "esbuild": "0.21.5"
   }
 }
