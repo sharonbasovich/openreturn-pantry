@@ -1,0 +1,29 @@
+OPENRETURN / INTEGER-MINUTE COVERAGE AUDIT
+"The Thursday pantry window"
+Service day: 2026-11-12; data: synthetic. Supplied schedule, not verified travel advice.
+Opening-start bounds: 09:00 through 13:00, inclusive. Staffed duration: 120 min.
+Current opening 09:00–11:00: 3/7
+Best tested grid opening 10:30–12:30: 5/7
+Best integer-minute opening 10:20–12:20: 5/7
+The supplied grid reaches the maximum coverage count within the bounds.
+Versus grid best: gained None; lost None.
+Versus current: gained "West End", "Orchard", "Eastbank"; lost "Maple Court".
+
+COVERAGE RANGES
+Endpoints below are inclusive OPENING START times, not opening/closing windows. Every integer minute in a row covers the same origin IDs.
+09:00 through 09:24: 3/7; IDs ["maple","hilltop","willow"]
+09:25 through 09:45: 4/7; IDs ["maple","hilltop","willow","west"]
+09:46 through 09:54: 3/7; IDs ["hilltop","willow","west"]
+09:55 through 10:19: 4/7; IDs ["hilltop","willow","west","orchard"]
+10:20 through 10:30: 5/7; IDs ["hilltop","willow","west","orchard","east"]
+10:31 through 11:25: 4/7; IDs ["willow","west","orchard","east"]
+11:26 through 11:55: 3/7; IDs ["willow","orchard","east"]
+11:56 through 12:20: 1/7; IDs ["east"]
+12:21 through 13:00: 0/7; IDs []
+
+LIMITATIONS
+Exact means every integer opening-start minute within the supplied bounds under the existing schedule model, not continuous time, real-world access, reliability or optimal welfare.
+Counts represent origin scenarios, not people. Review every gain and loss. Equal coverage does not establish fairness.
+Witnesses, waiting and headroom can change within one coverage range. This report does not claim one journey works for the whole range.
+Best-count ties choose the start closest to current hours, then earlier start. The browser grid and source scenario are unchanged.
+Use the normal app/decision sheet with the chosen start to inspect concrete witnesses before making a decision. No operator validation has occurred.

@@ -1,0 +1,3 @@
+{"kind":"shared-constraints","milliseconds":157.436803,"connections":1200,"origins":24,"integerStarts":2760,"returnSearches":12,"cachedReturnDeadlines":1,"ranges":2,"node":"v24.22.1"}
+{"kind":"distinct-constraints","milliseconds":1485.6757249999998,"connections":1200,"origins":24,"integerStarts":2760,"returnSearches":8773,"cachedReturnDeadlines":830,"ranges":2,"node":"v24.22.1"}
+Synthetic Node measurements only, not a worst-case runtime bound or browser responsiveness claim.
