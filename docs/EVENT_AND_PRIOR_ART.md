@@ -2,6 +2,10 @@
 
 Checked November 8, 2026, approximately 01:05–01:11 UTC, before implementation.
 
+Rechecked November 8 before the decision-audit enhancement: the official homepage still shows 33 participants, not projects; the project gallery is unpublished. Rules still require original in-window work and include usability. The schedule remains November 5 05:00 UTC through December 2 01:00 UTC. The November 21 versus December 5 winners-date conflict remains unresolved. No event submission or public candidate release was made.
+
+Rechecked November 8 by 02:53 UTC during the routing-cache supplement through the official rules, schedule, homepage and project-gallery pages. The same window, 33-participant count, unpublished gallery and winner-date conflict remain. Homepage judging lists presentation but omits the rules' separate usability criterion; both are preserved. No registration, submission or prize-result inference follows from this check.
+
 ## Code for Change
 
 Official overview: https://code-for-change-global.devpost.com/
@@ -32,3 +36,7 @@ OpenReturn's intended contribution is a small, inspectable operator workflow: co
 ## Authorship and release boundary
 
 This is AI-assisted original implementation, testing, design and documentation, started November 8. No real participant or pantry records were used. All transit examples are original synthetic data. No account, live service, entry or operating hours are changed. Publication and entry claims require their own successful receipts. The prototype should not be represented as field tested or production ready.
+
+## Later event check
+
+Rechecked November 8 at approximately 05:00 UTC: the official homepage showed 34 participants, not submitted projects; the gallery remained unpublished. The November 5 05:00 UTC–December 2 01:00 UTC window, original-work rule and conflicting winners dates remained unchanged. No event submission was made by this source update.

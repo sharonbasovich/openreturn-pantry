@@ -24,3 +24,15 @@
 .section-heading > p, .origin-button, .journey-detail, .timeline li,
 .tradeoffs{overflow-wrap:anywhere}
 .origin-button span{flex-shrink:0}
+.assumption-section{padding:35px 0 48px;border-top:1px solid var(--line)}
+.assumption-section>p{max-width:850px;font-size:13px;line-height:1.7}
+.sensitivity-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin-top:22px}
+.sensitivity-card,.journey-burden{min-width:0;background:var(--white);border:1px solid var(--line);border-radius:7px;padding:20px;overflow-wrap:anywhere}
+.sensitivity-card h4{font-size:16px;margin:0 0 8px}
+.sensitivity-card p,.journey-burden p{font-size:12px;line-height:1.65;margin:9px 0}
+.sensitivity-result{font-weight:700}
+.journey-burden{background:var(--light);margin-bottom:24px;padding:18px}
+.headroom{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0}
+.headroom div{min-width:0}.headroom dt{font-size:11px}.headroom dd{margin:4px 0 0;font-weight:650;font-size:13px}
+@media(max-width:720px){.sensitivity-grid{grid-template-columns:minmax(0,1fr)}.headroom{grid-template-columns:minmax(0,1fr)}}
+@media print{#check-assumptions{display:none}.sensitivity-grid{display:block}.sensitivity-card{break-inside:avoid;margin-bottom:10px}.journey-burden{background:#fff}}

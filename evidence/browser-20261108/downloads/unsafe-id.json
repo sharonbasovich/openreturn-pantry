@@ -1,0 +1,255 @@
+{
+  "version": 1,
+  "title": "Synthetic CSV rejection check",
+  "serviceDay": "2026-11-12",
+  "dataKind": "synthetic",
+  "stops": [
+    {
+      "id": "P",
+      "name": "Community pantry"
+    },
+    {
+      "id": "A",
+      "name": "Maple Court"
+    },
+    {
+      "id": "B",
+      "name": "Hilltop"
+    },
+    {
+      "id": "C",
+      "name": "Willow"
+    },
+    {
+      "id": "D",
+      "name": "West End"
+    },
+    {
+      "id": "E",
+      "name": "Orchard"
+    },
+    {
+      "id": "F",
+      "name": "Eastbank"
+    },
+    {
+      "id": "G",
+      "name": "South Wharf"
+    },
+    {
+      "id": "HB",
+      "name": "Hilltop interchange"
+    },
+    {
+      "id": "HW",
+      "name": "West End interchange"
+    }
+  ],
+  "pantryStop": "P",
+  "origins": [
+    {
+      "id": "maple",
+      "stopId": "A",
+      "label": "Maple Court",
+      "leaveAfter": 480,
+      "homeBy": 960,
+      "maxAwayMinutes": 180
+    },
+    {
+      "id": "hilltop",
+      "stopId": "B",
+      "label": "Hilltop",
+      "leaveAfter": 480,
+      "homeBy": 960,
+      "maxAwayMinutes": 180
+    },
+    {
+      "id": "willow",
+      "stopId": "C",
+      "label": "Willow",
+      "leaveAfter": 480,
+      "homeBy": 960,
+      "maxAwayMinutes": 180
+    },
+    {
+      "id": "west",
+      "stopId": "D",
+      "label": "West End",
+      "leaveAfter": 480,
+      "homeBy": 960,
+      "maxAwayMinutes": 180
+    },
+    {
+      "id": "orchard",
+      "stopId": "E",
+      "label": "Orchard",
+      "leaveAfter": 480,
+      "homeBy": 960,
+      "maxAwayMinutes": 180
+    },
+    {
+      "id": "east",
+      "stopId": "F",
+      "label": "Eastbank",
+      "leaveAfter": 480,
+      "homeBy": 960,
+      "maxAwayMinutes": 180
+    },
+    {
+      "id": "wharf",
+      "stopId": "G",
+      "label": "South Wharf",
+      "leaveAfter": 480,
+      "homeBy": 960,
+      "maxAwayMinutes": 180
+    }
+  ],
+  "connections": [
+    {
+      "id": "=not-a-formula-evaluation",
+      "tripId": "A1",
+      "from": "A",
+      "to": "P",
+      "departure": 525,
+      "arrival": 540
+    },
+    {
+      "id": "b-out-1",
+      "tripId": "B1",
+      "from": "B",
+      "to": "HB",
+      "departure": 580,
+      "arrival": 590
+    },
+    {
+      "id": "c-out",
+      "tripId": "C1",
+      "from": "C",
+      "to": "P",
+      "departure": 580,
+      "arrival": 600
+    },
+    {
+      "id": "b-out-2",
+      "tripId": "B1",
+      "from": "HB",
+      "to": "P",
+      "departure": 593,
+      "arrival": 605
+    },
+    {
+      "id": "a-home",
+      "tripId": "A2",
+      "from": "P",
+      "to": "A",
+      "departure": 600,
+      "arrival": 615
+    },
+    {
+      "id": "g-out",
+      "tripId": "G1",
+      "from": "G",
+      "to": "P",
+      "departure": 610,
+      "arrival": 630
+    },
+    {
+      "id": "d-out-1",
+      "tripId": "D1",
+      "from": "D",
+      "to": "HW",
+      "departure": 630,
+      "arrival": 645
+    },
+    {
+      "id": "b-home-1",
+      "tripId": "B2",
+      "from": "P",
+      "to": "HB",
+      "departure": 645,
+      "arrival": 660
+    },
+    {
+      "id": "d-out-2",
+      "tripId": "D2",
+      "from": "HW",
+      "to": "P",
+      "departure": 651,
+      "arrival": 670
+    },
+    {
+      "id": "b-home-2",
+      "tripId": "B2",
+      "from": "HB",
+      "to": "B",
+      "departure": 663,
+      "arrival": 675
+    },
+    {
+      "id": "e-out",
+      "tripId": "E1",
+      "from": "E",
+      "to": "P",
+      "departure": 680,
+      "arrival": 700
+    },
+    {
+      "id": "d-home-1",
+      "tripId": "D3",
+      "from": "P",
+      "to": "HW",
+      "departure": 700,
+      "arrival": 710
+    },
+    {
+      "id": "f-out",
+      "tripId": "F1",
+      "from": "F",
+      "to": "P",
+      "departure": 705,
+      "arrival": 725
+    },
+    {
+      "id": "d-home-2",
+      "tripId": "D4",
+      "from": "HW",
+      "to": "D",
+      "departure": 716,
+      "arrival": 730
+    },
+    {
+      "id": "c-home",
+      "tripId": "C2",
+      "from": "P",
+      "to": "C",
+      "departure": 730,
+      "arrival": 750
+    },
+    {
+      "id": "e-home",
+      "tripId": "E2",
+      "from": "P",
+      "to": "E",
+      "departure": 730,
+      "arrival": 750
+    },
+    {
+      "id": "f-home",
+      "tripId": "F2",
+      "from": "P",
+      "to": "F",
+      "departure": 755,
+      "arrival": 775
+    }
+  ],
+  "settings": {
+    "baselineStart": 540,
+    "earliestStart": 540,
+    "latestStart": 780,
+    "openMinutes": 120,
+    "visitMinutes": 15,
+    "stepMinutes": 15,
+    "transferMinutes": 5,
+    "maxTransfers": 2
+  }
+}

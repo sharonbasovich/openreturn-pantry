@@ -132,14 +132,18 @@ function route(ctx, from, to, ready, deadline, firstDeparture = null) {
   return winner;
 }
 function outwardOptions(ctx,o) {
-  if(ctx.outbound.has(o.id)) return ctx.outbound.get(o.id);
+  // Origin IDs label results; routing depends only on these constraints.
+  // Keep caches local to one prepared scenario so timetable/settings changes
+  // cannot reuse stale routes. JSON tuples preserve arbitrary ID boundaries.
+  const key=JSON.stringify([o.stopId,o.leaveAfter,o.homeBy,o.maxAwayMinutes]);
+  if(ctx.outbound.has(key)) return ctx.outbound.get(key);
   const times=[...new Set(ctx.s.connections.filter(c=>c.from===o.stopId && c.departure>=o.leaveAfter && c.departure<o.homeBy).map(c=>c.departure))];
   const options=[];
   for(const depart of times) {
     const out=route(ctx,o.stopId,ctx.s.pantryStop,depart,Math.min(o.homeBy,depart+o.maxAwayMinutes),depart);
     if(out) options.push({depart,...out});
   }
-  ctx.outbound.set(o.id,options); return options;
+  ctx.outbound.set(key,options); return options;
 }
 function journeyCompare(a,b) {
   return a.awayMinutes-b.awayMinutes || a.arrive-b.arrive || pathCompare(a.outbound,b.outbound) || pathCompare(a.return,b.return);
@@ -158,7 +162,9 @@ function evaluate(ctx,start) {
       const pickupStart=Math.max(start,out.arrival), pickupEnd=pickupStart+s.settings.visitMinutes;
       if(pickupEnd>end || pickupEnd>o.homeBy || pickupEnd>out.depart+o.maxAwayMinutes) continue;
       pickupFits=true;
-      const key=JSON.stringify([o.id,pickupEnd]);
+      // The return search does not use the origin label, departure availability
+      // or away allowance. The full round-trip away check remains below.
+      const key=JSON.stringify([o.stopId,pickupEnd,o.homeBy]);
       if(!ctx.returns.has(key)) ctx.returns.set(key,route(ctx,s.pantryStop,o.stopId,pickupEnd,o.homeBy));
       const back=ctx.returns.get(key);
       if(!back) continue;
@@ -166,7 +172,10 @@ function evaluate(ctx,start) {
       if(back.arrival>out.depart+o.maxAwayMinutes) continue;
       const awayMinutes=back.arrival-out.depart;
       const riding=[...out.path,...back.path].reduce((n,c)=>n+c.arrival-c.departure,0);
-      const j={outbound:out.path,pickupStart,pickupEnd,return:back.path,depart:out.depart,arrive:back.arrival,awayMinutes,waitMinutes:awayMinutes-riding-s.settings.visitMinutes};
+      // Sharing a route search must not introduce shared mutable path arrays
+      // between distinct origin results. Connection objects remain the same
+      // normalized timetable objects, as in the original implementation.
+      const j={outbound:[...out.path],pickupStart,pickupEnd,return:[...back.path],depart:out.depart,arrive:back.arrival,awayMinutes,waitMinutes:awayMinutes-riding-s.settings.visitMinutes};
       if(!best || journeyCompare(j,best)<0) best=j;
     }
     // Diagnose only after every retained outward option has been considered.
