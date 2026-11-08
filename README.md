@@ -63,9 +63,15 @@ CSV is not a guarantee against spreadsheet auto-conversion: import every ID colu
 
 ## Input and privacy
 
-The scenario format is documented in [docs/DATA_FORMAT.md](docs/DATA_FORMAT.md). Paste JSON to replace a complete scenario, or select CSV to replace only its timetable connections while retaining its existing stops, origins and settings. Both modes require validation and confirmation before replacement. CSV must describe an already selected service-day timetable; it does not infer or verify the retained service-day label. **This is not a GTFS importer.** Do not paste an unfiltered GTFS feed and assume its service calendars, pickup restrictions or transfers have been interpreted.
+The scenario format is documented in [docs/DATA_FORMAT.md](docs/DATA_FORMAT.md). Paste JSON to replace a complete scenario, or select CSV to replace only its timetable connections while retaining its existing stops, origins and settings. Both modes require validation and confirmation before replacement. CSV must describe an already selected service-day timetable; it does not infer or verify the retained service-day label. **The browser CSV helper is not a GTFS importer.** Do not paste an unfiltered GTFS feed and assume its service calendars, pickup restrictions or transfers have been interpreted.
 
 Application code makes no network requests, uses no analytics, and does not store scenario content in localStorage. The server hosting the app may receive ordinary page requests. Keep anonymous stop labels and scenario IDs, not client names, home addresses, or sensitive demographic information. Explicit exported files remain on the device where they are saved. Reloading discards unsaved work.
+
+## Optional offline GTFS subset adapter
+
+An optional, dependency-free Node CLI can project a **restricted scheduled-service subset** from local extracted GTFS files into scenario JSON plus a provenance/limitations receipt. Choose one service date and explicit routes or trips, and supply anonymous origin/settings assumptions in agency-timezone service-day minutes. It retains complete selected trip chains, repeated stops, dwell and 24+ hour times; unsupported restrictions fail instead of being silently discarded. The browser importer, routing model and package commands are unchanged.
+
+Start with the [synthetic example and exact input contract](docs/GTFS_SUBSET.md). This is not broad GTFS support, a complete-feed validator, real-feed validation or travel advice. Many ordinary feeds are intentionally rejected. Keep the receipt with the generated scenario.
 
 ## Model and limitations
 

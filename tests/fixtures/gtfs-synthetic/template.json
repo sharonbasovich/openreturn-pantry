@@ -1,0 +1,10 @@
+{
+  "title": "Synthetic overnight GTFS subset",
+  "timeZone": "America/New_York",
+  "timeBasis": "gtfs-service-day-minutes",
+  "pantryStop": "P",
+  "origins": [
+    {"id":"synthetic-origin","stopId":"A","label":"Anonymous synthetic origin","leaveAfter":1420,"homeBy":1540,"maxAwayMinutes":130}
+  ],
+  "settings": {"baselineStart":1450,"openMinutes":60,"visitMinutes":15,"earliestStart":1450,"latestStart":1480,"stepMinutes":15,"transferMinutes":10,"maxTransfers":0}
+}
