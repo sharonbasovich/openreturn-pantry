@@ -1,0 +1,81 @@
+OPENRETURN / DECISION SHEET
+Synthetic overnight GTFS subset
+Service day: 2026-11-12
+Data: user-supplied. Unverified scheduled stop-to-stop scenarios, not travel advice.
+
+Current: 00:10 +1d–01:10 +1d — 1/1 origins
+Best tested: 00:10 +1d–01:10 +1d — 1/1 origins
+Gained: None
+Lost: None
+
+APPLIED CONSTRAINTS
+Current start: 00:10 +1d
+Staffed minutes: 60
+Earliest start: 00:10 +1d
+Latest start: 00:40 +1d
+Visit minutes: 15
+Search step (min): 15
+Transfer buffer (min): 10
+Max transfers / leg: 0
+
+SCHEDULE BURDEN AND HEADROOM
+Ranges cover feasible origin scenarios only, not people. Witnesses minimize time away, not waiting.
+Headroom is arithmetic for the displayed scheduled witness, not a guarantee of delay tolerance.
+CURRENT 00:10 +1d–01:10 +1d: waits 15 min; time away 53 min.
+  Anonymous synthetic origin (synthetic-origin): wait 15 = before visit 0 + after visit 15 + transfers 0 + on-board dwell 0 min; riding 23 min.
+  Remaining minutes: away allowance 77; home deadline 45; closing 45; return departure 15; minimum transfer/reboarding buffer headroom not applicable.
+BEST TESTED 00:10 +1d–01:10 +1d: waits 15 min; time away 53 min.
+  Anonymous synthetic origin (synthetic-origin): wait 15 = before visit 0 + after visit 15 + transfers 0 + on-board dwell 0 min; riding 23 min.
+  Remaining minutes: away allowance 77; home deadline 45; closing 45; return departure 15; minimum transfer/reboarding buffer headroom not applicable.
+Highest-coverage grid starts (2): 00:10 +1d, 00:25 +1d.
+The selected tie-break favors the start closest to current hours, then earlier start. Equal counts can cover different origins or waits.
+
+ASSUMPTION CHECKS
+Hypothetical changes, not measured delays or probabilities. Fixed window: 00:10 +1d–01:10 +1d. Reoptimization may change hours; it does not rescue the fixed window.
+Applied visit 15 min; transfer buffer 10 min.
+Visit +15 minutes: visit 30 min; transfer buffer 10 min.
+  Current hours with changed assumptions: 1/1.
+  Keep applied best hours 00:10 +1d–01:10 +1d: 1/1; lost from applied best: None; gained: None.
+  Search again 00:10 +1d–01:10 +1d: 1/1; net +0 versus current hours under the SAME changed assumptions.
+  Search-again losses from applied best: None; gains: None.
+  Search-again losses versus changed current: None; gains: None.
+  Highest-coverage grid starts: 00:10 +1d.
+Transfer buffer +5 minutes: visit 15 min; transfer buffer 15 min.
+  Current hours with changed assumptions: 1/1.
+  Keep applied best hours 00:10 +1d–01:10 +1d: 1/1; lost from applied best: None; gained: None.
+  Search again 00:10 +1d–01:10 +1d: 1/1; net +0 versus current hours under the SAME changed assumptions.
+  Search-again losses from applied best: None; gains: None.
+  Search-again losses versus changed current: None; gains: None.
+  Highest-coverage grid starts: 00:10 +1d, 00:25 +1d.
+Both changes: visit 30 min; transfer buffer 15 min.
+  Current hours with changed assumptions: 1/1.
+  Keep applied best hours 00:10 +1d–01:10 +1d: 1/1; lost from applied best: None; gained: None.
+  Search again 00:10 +1d–01:10 +1d: 1/1; net +0 versus current hours under the SAME changed assumptions.
+  Search-again losses from applied best: None; gains: None.
+  Search-again losses versus changed current: None; gains: None.
+  Highest-coverage grid starts: 00:10 +1d.
+
+CURRENT: 00:10 +1d–01:10 +1d
+
+Anonymous synthetic origin (synthetic-origin)
+Origin stop: Synthetic origin, east; leave after 23:40; home by 01:40 +1d; maximum away 130 min.
+Outbound 00:02 +1d–00:10 +1d: Synthetic origin, east → Synthetic pantry stop [trip loop, connection gtfs-leg-3]
+Visit 00:10 +1d–00:25 +1d at Synthetic pantry stop
+Return 00:40 +1d–00:55 +1d: Synthetic pantry stop → Synthetic origin, east [trip return, connection gtfs-leg-4]
+Back 00:55 +1d; 53 minutes away; 15 scheduled wait minutes.
+
+BEST TESTED: 00:10 +1d–01:10 +1d
+
+Anonymous synthetic origin (synthetic-origin)
+Origin stop: Synthetic origin, east; leave after 23:40; home by 01:40 +1d; maximum away 130 min.
+Outbound 00:02 +1d–00:10 +1d: Synthetic origin, east → Synthetic pantry stop [trip loop, connection gtfs-leg-3]
+Visit 00:10 +1d–00:25 +1d at Synthetic pantry stop
+Return 00:40 +1d–00:55 +1d: Synthetic pantry stop → Synthetic origin, east [trip return, connection gtfs-leg-4]
+Back 00:55 +1d; 53 minutes away; 15 scheduled wait minutes.
+
+LIMITATIONS
+Counts represent origins, not people served or real-world impact. Equal staffed duration does not establish fairness. Review every lost origin.
+Best means highest reachable count among tested start times only, then closest to current start, then earlier start; a coarse step may miss better windows. One feasible witness is shown per origin, not a guaranteed itinerary.
+One supplied service-day timetable. No walking, live delays, cancellations, fares, wheelchair accessibility, capacity, demand, or automatic service-calendar / GTFS verification.
+Verify the date, timetable, stop access and local assumptions with operators and the community before changing real opening hours.
+No accounts, telemetry or autosave. This export contains applied data only; unapplied drafts are excluded.

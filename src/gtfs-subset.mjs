@@ -112,8 +112,11 @@ const limitations = [
 
 /** files: {basename: UTF-8 text}; exactly one explicit routeIds/tripIds list. */
 export function adaptGtfsSubset(options) {
-  exactKeys(options,['files','serviceDay','routeIds','tripIds','template'],'Options');
+  exactKeys(options,['files','serviceDay','routeIds','tripIds','template','blockPolicy'],'Options');
   const {files,template}=options;
+  const blockPolicy=own(options,'blockPolicy')?options.blockPolicy:'reject-blocks';
+  if(!['reject-blocks','separate-trips'].includes(blockPolicy)) fail('Unsupported blockPolicy.');
+  const separate=blockPolicy==='separate-trips';
   record(files,'files');
   date(options.serviceDay,'serviceDay');
   const modes=['routeIds','tripIds'].filter(key=>own(options,key));
@@ -178,6 +181,7 @@ export function adaptGtfsSubset(options) {
     serviceEvidence.set(row.service_id,{serviceId:row.service_id,calendarActive:serviceEvidence.get(row.service_id)?.calendarActive??false,exception:row.exception_type==='1'?'added':'removed',active:row.exception_type==='1'});
   }
   for(const trip of trips.values()) {
+    if(separate&&trip.block_id) textValue(trip.block_id,'trips.block_id');
     textValue(trip.route_id,'trips.route_id');textValue(trip.service_id,'trips.service_id');
     if(!routes.has(trip.route_id)) fail(`Trip references unknown route ${JSON.stringify(trip.route_id)}.`);
     if(!services.has(trip.service_id)) fail(`Trip references unknown service ${JSON.stringify(trip.service_id)}.`);
@@ -191,6 +195,13 @@ export function adaptGtfsSubset(options) {
   if(!selected.length) fail('The selected scope has no active trips on serviceDay.');
   if(mode==='routeIds') for(const id of scope) if(!selected.some(t=>t.route_id===id)) fail(`Requested route ${JSON.stringify(id)} has no active trips on serviceDay.`);
   const selectedIds=new Set(selected.map(t=>t.trip_id));
+  // Membership is exhaustive only relative to trips supplied in this archive.
+  // Block identity never changes scenario trip identity or creates a connection.
+  const touchedBlocks=separate?sorted(new Set(selected.map(t=>t.block_id).filter(Boolean))):[];
+  const blockMembers=new Map(touchedBlocks.map(id=>[id,[]]));
+  if(separate) for(const trip of trips.values()) if(blockMembers.has(trip.block_id))
+    blockMembers.get(trip.block_id).push({tripId:trip.trip_id,routeId:trip.route_id,serviceId:trip.service_id,active:active.has(trip.service_id),selected:selectedIds.has(trip.trip_id),inScope:scope.includes(mode==='routeIds'?trip.route_id:trip.trip_id),omissionReason:selectedIds.has(trip.trip_id)?null:!active.has(trip.service_id)?'inactive-on-service-day':'outside-selected-scope'});
+  const membershipServices=separate?[...blockMembers.values()].flat().map(t=>t.serviceId):[];
   for(const row of tables['frequencies.txt']??[]) {
     textValue(row.trip_id,'frequencies.trip_id');
     if(!trips.has(row.trip_id)) fail('frequencies references an unknown trip.');
@@ -216,7 +227,7 @@ export function adaptGtfsSubset(options) {
   }
   const connections=[],connectionMap=[],calls=[],usedStops=new Set();
   for(const trip of selected) {
-    absent(trip,['block_id','safe_duration_factor','safe_duration_offset'],`Trip ${JSON.stringify(trip.trip_id)}`);
+    absent(trip,separate?['safe_duration_factor','safe_duration_offset']:['block_id','safe_duration_factor','safe_duration_offset'],`Trip ${JSON.stringify(trip.trip_id)}`);
     const route=routes.get(trip.route_id),rows=times.get(trip.trip_id).sort((a,b)=>a.sequence-b.sequence);
     if(rows.length<2) fail('Each selected trip needs at least two supplied stop-time records.');
     // Do not infer missing timepoint flags in a partially populated selected trip.
@@ -268,15 +279,25 @@ export function adaptGtfsSubset(options) {
   // Match the browser's complete backup/import size contract as well as the model.
   const scenarioText=exportScenarioJson(scenario)+'\n';
   const receipt={
-    format:'openreturn-gtfs-subset-receipt',version:1,adapterVersion:'1.0.0',
+    format:'openreturn-gtfs-subset-receipt',version:separate?2:1,adapterVersion:separate?'1.1.0':'1.0.0',
     reference:'https://gtfs.org/documentation/schedule/reference/',referenceReviewed:'2026-11-08',
     serviceDay:options.serviceDay,timeZone:template.timeZone,timeBasis:template.timeBasis,
     selection:{kind:mode,ids:scope,selectedTripIds:selected.map(t=>t.trip_id),inactiveScopedTripIds:inactive,outOfScopeTripCount:trips.size-scoped.length},
-    services:sorted(new Set(scoped.map(t=>t.service_id))).map(id=>serviceEvidence.get(id)??{serviceId:id,calendarActive:false,exception:null,active:false}),
+    services:sorted(new Set([...scoped.map(t=>t.service_id),...membershipServices])).map(id=>serviceEvidence.get(id)??{serviceId:id,calendarActive:false,exception:null,active:false}),
     routes:routeEvidence,stops:stopEvidence,inputs,
     templateHash:{encoding:'JSON.stringify of supplied template object, UTF-8',sha256:hash(JSON.stringify(template))},
     output:{file:'scenario.json',encoding:'exportScenarioJson plus LF, UTF-8',bytes:bytes(scenarioText),sha256:hash(scenarioText),stops:scenario.stops.length,trips:selected.length,connections:scenario.connections.length,origins:scenario.origins.length},
     connectionMap,stopCalls:calls,limitations:[...limitations]
   };
+  if(separate) {
+    receipt.blockProjection={
+      policy:blockPolicy,
+      selectedTripBlocks:selected.map(t=>({tripId:t.trip_id,blockId:t.block_id||null})),
+      touchedBlocks:touchedBlocks.map(blockId=>({blockId,members:blockMembers.get(blockId).sort((a,b)=>cmp(a.tripId,b.tripId))}))
+    };
+    receipt.limitations[5]='Only regular scheduled pickup/drop-off, exact whole-minute times and positive-duration adjacent legs are supported. Selected frequency service, flexible service and unsupported files/fields are rejected.';
+    receipt.limitations.push('Explicit separate-trips is a lossy scheduled-service projection, not onboard or block support. Original trip IDs remain separate: every trip change requires the same-stop template transfer buffer and transfer count, including changes within a block. No inter-trip in-seat permission or block continuation is inferred; adjacent legs within an original trip retain normal onboard continuation.');
+    receipt.limitations.push('Touched block memberships and service activation cover all supplied trips, including inactive and out-of-scope members, but do not prove archive completeness. Unselected trips are not projected or certified valid; omitted inter-trip onboard links may change coverage and rankings. Block chronology and vehicle allocation are not validated. Membership does not prove vehicle availability, physical feasibility or real-world usability.');
+  }
   return {scenario,receipt};
 }

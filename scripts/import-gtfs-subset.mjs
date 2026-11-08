@@ -7,12 +7,12 @@ import {exportScenarioJson} from '../src/import.mjs';
 import {createHash} from 'node:crypto';
 import {strictJson,RECEIPT_LIMITS} from '../src/gtfs-artifact-json.mjs';
 
-const usage='Usage: node scripts/import-gtfs-subset.mjs --feed DIR --date YYYY-MM-DD (--route ID [--route ID ...] | --trip ID [--trip ID ...]) --template FILE --out NEW_DIR';
+const usage='Usage: node scripts/import-gtfs-subset.mjs --feed DIR --date YYYY-MM-DD (--route ID [--route ID ...] | --trip ID [--trip ID ...]) --template FILE --out NEW_DIR [--block-policy separate-trips]';
 function argumentsFor(args) {
   const values={},routes=[],trips=[];
   for(let i=0;i<args.length;i+=2) {
     const flag=args[i],value=args[i+1];
-    if(!['--feed','--date','--route','--trip','--template','--out'].includes(flag)||value===undefined) throw new Error(usage);
+    if(!['--feed','--date','--route','--trip','--template','--out','--block-policy'].includes(flag)||value===undefined) throw new Error(usage);
     if(flag==='--route') routes.push(value);
     else if(flag==='--trip') trips.push(value);
     else {if(Object.hasOwn(values,flag)) throw new Error(`Duplicate argument ${flag}.`);values[flag]=value;}
@@ -58,7 +58,7 @@ async function run(args) {
   }
   const templateText=await boundedText(values['--template'],GTFS_LIMITS.templateBytes,'Template');
   const template=strictJson(templateText,GTFS_LIMITS.templateBytes);
-  const {scenario,receipt}=adaptGtfsSubset({files,serviceDay:values['--date'],...scope,template});
+  const {scenario,receipt}=adaptGtfsSubset({files,serviceDay:values['--date'],...scope,template,...(Object.hasOwn(values,'--block-policy')?{blockPolicy:values['--block-policy']}:{})});
   receipt.templateInput={bytes:Buffer.byteLength(templateText,'utf8'),sha256:createHash('sha256').update(templateText,'utf8').digest('hex')};
   const outputs=[['scenario.json',exportScenarioJson(scenario)+'\n'],['receipt.json',JSON.stringify(receipt,null,2)+'\n']];
   // Apply the replay reader's JSON/UTF-8 byte contract to the exact serialized

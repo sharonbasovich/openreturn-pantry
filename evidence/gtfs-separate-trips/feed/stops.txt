@@ -1,0 +1,5 @@
+stop_id,stop_name,stop_lat,stop_lon
+A,"Synthetic origin, east",0,0
+X,Synthetic loop stop,0,0
+P,Synthetic pantry stop,0,0
+U,Synthetic unused stop,0,0
