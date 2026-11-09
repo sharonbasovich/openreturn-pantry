@@ -1,5 +1,5 @@
 // Offline terminal export. Browser-rendering and download acceptance are separate.
-import { readFile } from 'node:fs/promises';
+import { readScenarioFile } from './read-scenario-file.mjs';
 import { SAMPLE } from '../src/sample.mjs';
 import { parseScenarioJson } from '../src/import.mjs';
 import { auditDecision, auditSensitivity } from '../src/decision.mjs';
@@ -10,7 +10,7 @@ if (args.length > 1 || args.some(arg => arg.startsWith('-'))) {
   process.exitCode = 1;
 } else {
   try {
-    const scenario = args.length ? parseScenarioJson(await readFile(args[0], 'utf8')) : SAMPLE;
+    const scenario = args.length ? parseScenarioJson(await readScenarioFile(args[0])) : SAMPLE;
     process.stdout.write(buildDecisionSheet(auditDecision(scenario), auditSensitivity(scenario)) + '\n');
   } catch (error) {
     console.error(`Decision sheet not generated: ${error.message}`);
