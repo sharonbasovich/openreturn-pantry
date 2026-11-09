@@ -1,0 +1,42 @@
+// Independent synthetic CLI regressions. Run: node PATH_TO_THIS_SCRIPT [REPOSITORY_ROOT]
+import assert from 'node:assert/strict';
+import {readFile,writeFile,mkdir,cp,stat,symlink,readdir,mkdtemp,rm} from 'node:fs/promises';
+import {spawnSync} from 'node:child_process';
+import {resolve,join} from 'node:path';
+import {createHash} from 'node:crypto';
+import {tmpdir} from 'node:os';
+const root=resolve(process.argv[2]||'.'),work=await mkdtemp(join(tmpdir(),'gtfs-independent-'));
+const fixture=join(root,'tests/fixtures/gtfs-synthetic'),feed=join(fixture,'feed'),template=await readFile(join(fixture,'template.json'),'utf8');const results=[];
+const exists=async p=>{try{await stat(p);return true}catch{return false}};
+function run(script,args){const r=spawnSync(process.execPath,[join(root,'scripts',script),...args],{encoding:'utf8'});return {status:r.status,stdout:r.stdout,stderr:r.stderr};}
+async function check(name,text,expected,{f=feed,out=join(work,name+'-output'),code,compare=false}={}){const t=join(work,name+'.json');await writeFile(t,text);const r=run('import-gtfs-subset.mjs',['--feed',f,'--date','2026-11-12','--route','R','--template',t,'--out',out]);assert.equal(r.status,expected,name+JSON.stringify(r));if(expected){assert.equal(await exists(out),false,name+' output created');if(code)assert.match(r.stderr,code);assert.ok(!r.stderr.includes(work));assert.ok(!r.stderr.includes('PRIVATE_SENTINEL'));}else{const v=run('verify-gtfs-receipt.mjs',['--scenario',join(out,'scenario.json'),'--receipt',join(out,'receipt.json'),'--feed',f,'--template',t]);assert.equal(v.status,0,name+JSON.stringify(v));if(compare)assert.equal(await readFile(join(out,'scenario.json'),'utf8'),await readFile(join(fixture,'expected/scenario.json'),'utf8'));r.verify=v;}results.push({name,...r});return out;}
+await check('valid',template,0,{compare:true});
+await check('top-duplicate',template.replace('{','{"title":"PRIVATE_SENTINEL",'),1,{code:/DUPLICATE_JSON_KEY/});
+await check('escaped-duplicate',template.replace('{','{"\\u0074itle":"PRIVATE_SENTINEL",'),1,{code:/DUPLICATE_JSON_KEY/});
+await check('nested-duplicate',template.replace('"maxTransfers":0','"maxTransfers":1,"maxTransfers":0'),1,{code:/DUPLICATE_JSON_KEY/});
+await check('unknown-duplicate',template.replace('{','{"PRIVATE_SENTINEL":0,"PRIVATE_SENTINEL":1,'),1,{code:/DUPLICATE_JSON_KEY/});
+await check('surrogate',template.replace('Synthetic overnight GTFS subset','\\ud800'),1,{code:/INVALID_JSON/});
+await check('bad-utf8',Buffer.concat([Buffer.from(template),Buffer.from([0xc0,0xaf])]),1);
+await check('bom-crlf','\ufeff'+template.replaceAll('\n','\r\n'),0,{compare:true});
+await check('template-exact-limit',template+' '.repeat(1000000-Buffer.byteLength(template)),0,{compare:true});
+await check('template-over-limit',template+' '.repeat(1000001-Buffer.byteLength(template)),1);
+await check('multibyte-exact-limit',template.replace('Synthetic','Synthétic')+' '.repeat(1000000-Buffer.byteLength(template)-1),0);
+await check('multibyte-over-limit',template.replace('Synthetic','Synthétic')+' '.repeat(1000000-Buffer.byteLength(template)),1);
+const localFeed=join(work,'local-feed');await cp(feed,localFeed,{recursive:true});
+await check('inside-feed',template,1,{f:localFeed,out:join(localFeed,'output')});
+await symlink(work,join(work,'alias'));
+await check('aliased-inside-feed',template,1,{f:localFeed,out:join(work,'alias/local-feed/output')});
+await check('aliased-feed-inside',template,1,{f:join(work,'alias/local-feed'),out:join(localFeed,'output')});
+await check('missing-deeper-output',template,1,{f:localFeed,out:join(localFeed,'missing/output')});
+await check('sibling',template,0,{f:localFeed,out:join(work,'local-feed-sibling')});
+const old=await readFile(join(work,'valid-output/receipt.json'));const r=run('import-gtfs-subset.mjs',['--feed',feed,'--date','2026-11-12','--route','R','--template',join(work,'valid.json'),'--out',join(work,'valid-output')]);assert.equal(r.status,1);assert.deepEqual(await readFile(join(work,'valid-output/receipt.json')),old);results.push({name:'no-overwrite',...r});
+const largeFeed=join(work,'large-feed');await cp(feed,largeFeed,{recursive:true});
+await writeFile(join(largeFeed,'trips.txt'),await readFile(join(feed,'trips.txt'),'utf8')+Array.from({length:50000},(_,i)=>'R,REMOVED,'+('inactive-'+i.toString().padStart(6,'0')+'-').padEnd(80,'x')).join('\n')+'\n');
+await check('large-receipt',template,1,{f:largeFeed,code:/INVALID_JSON_INPUT/});
+const {adaptGtfsSubset}=await import(join(root,'src/gtfs-subset.mjs'));const files=Object.fromEntries(await Promise.all((await readdir(feed)).map(async n=>[n,await readFile(join(feed,n),'utf8')])));
+const baseTrips=files['trips.txt'];const rows=Array.from({length:44376},(_,i)=>'R,REMOVED,'+('boundary-'+i.toString().padStart(6,'0')+'-').padEnd(80,'x'));
+const receiptBytes=()=>{const {receipt}=adaptGtfsSubset({files,template:JSON.parse(template),serviceDay:'2026-11-12',routeIds:['R']});receipt.templateInput={bytes:Buffer.byteLength(template),sha256:createHash('sha256').update(template).digest('hex')};return Buffer.byteLength(JSON.stringify(receipt,null,2)+'\n');};
+files['trips.txt']=baseTrips+rows.join('\n')+'\n';let delta=receiptBytes()-4000000;assert.ok(delta>=0&&delta<500);for(let i=0;delta>0;i++){const trim=Math.min(delta,50);rows[i]=rows[i].slice(0,-trim);delta-=trim;}files['trips.txt']=baseTrips+rows.join('\n')+'\n';assert.equal(receiptBytes(),4000000);
+const boundaryFeed=join(work,'boundary-feed');await cp(feed,boundaryFeed,{recursive:true});await writeFile(join(boundaryFeed,'trips.txt'),files['trips.txt']);const boundaryOut=await check('receipt-exact-limit',template,0,{f:boundaryFeed});assert.equal((await stat(join(boundaryOut,'receipt.json'))).size,4000000);
+rows[0]+='x';await writeFile(join(boundaryFeed,'trips.txt'),baseTrips+rows.join('\n')+'\n');await check('receipt-one-byte-over',template,1,{f:boundaryFeed,code:/INVALID_JSON_INPUT/});
+await rm(work,{recursive:true,force:true});console.log(JSON.stringify({ok:true,cases:results.length}));

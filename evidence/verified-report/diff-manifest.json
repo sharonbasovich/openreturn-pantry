@@ -1,0 +1,109 @@
+{
+  "baseline": "PR 7 cb60fbd529fbbcc6cf1c69d27ebd5913ae4c65db source copy",
+  "unchangedFiles": 113,
+  "deletedFiles": [],
+  "changes": [
+    {
+      "path": "README.md",
+      "status": "modified",
+      "sha256": "84469489cddfe675c92e1a7dba387c231cc80f2009f3471d5a2ac8b37c9e6bce",
+      "baselineSha256": "6b866a4909585fc121d67bff0a4e700c58ec4929007d6b59a8919c73331b452b"
+    },
+    {
+      "path": "docs/GTFS_RECEIPT_VERIFICATION.md",
+      "status": "modified",
+      "sha256": "b119631523f727317aa5a7e6fba40ac5d3ac2eb54532b5a06c7780a8034060da",
+      "baselineSha256": "10d751db52b198d866e68b5b0808a6ca59a6e77785cd968bd93448fac30fc94e"
+    },
+    {
+      "path": "docs/VERIFIED_GTFS_REPORT.md",
+      "status": "added",
+      "sha256": "cf50a9bbd5e27251c5f2384e6307deceee98f22f14ff096533c620e338464ffd",
+      "baselineSha256": null
+    },
+    {
+      "path": "evidence/VERIFIED_GTFS_REPORT_VALIDATION.md",
+      "status": "added",
+      "sha256": "d4b7fed0c816e65aa5d8f27fd6044d247cc0a90faad6440e592f01891d7ca234",
+      "baselineSha256": null
+    },
+    {
+      "path": "evidence/verified-report/focused-tests.log",
+      "status": "added",
+      "sha256": "2b67b477012de2ddf18bd1a20dfa22e9a5ad2fda25ef20d8b426b834884e8d48",
+      "baselineSha256": null
+    },
+    {
+      "path": "evidence/verified-report/inherited-generation-probe.log",
+      "status": "added",
+      "sha256": "b144dd2cadf22370d68f623cdbe1bf416ee4b8bf7f5e202b135b7c31f181776c",
+      "baselineSha256": null
+    },
+    {
+      "path": "evidence/verified-report/inherited-receipt-probe.log",
+      "status": "added",
+      "sha256": "4e0e9fdfc41c2d147ffa85e9af38b3f976909060ec45c57623e6d380874be533",
+      "baselineSha256": null
+    },
+    {
+      "path": "evidence/verified-report/inherited-separate-trips-probe.log",
+      "status": "added",
+      "sha256": "7dc4879deade28a543d9c83be99f696d3b51b1724d97eaf5952bfd614e144e05",
+      "baselineSha256": null
+    },
+    {
+      "path": "evidence/verified-report/inherited-subset-probes.log",
+      "status": "added",
+      "sha256": "03d2d4957e0133d83929ca91e7b7bd0ed9f6dbee116c95074303da9991ba95e4",
+      "baselineSha256": null
+    },
+    {
+      "path": "evidence/verified-report/npm-check.log",
+      "status": "added",
+      "sha256": "a2fdd7c7a929b9871925627fffa4ecafeec9853134306bb75c279868a706e2a4",
+      "baselineSha256": null
+    },
+    {
+      "path": "evidence/verified-report/npm-test.log",
+      "status": "added",
+      "sha256": "a568167397647d58d7e2c4af2e65b99a8da48e7d94abea4d0f3b3279172de3f6",
+      "baselineSha256": null
+    },
+    {
+      "path": "evidence/verified-report/oracle-mutations.json",
+      "status": "added",
+      "sha256": "74e27872fd0121d368494a172505311e8f074b99439602139917a0d9aea3ca18",
+      "baselineSha256": null
+    },
+    {
+      "path": "evidence/verified-report/syntax-checks.log",
+      "status": "added",
+      "sha256": "86af212311efede909b4d5af79656879428b6f9c674b34e2dc365e0d3e2fce66",
+      "baselineSha256": null
+    },
+    {
+      "path": "evidence/verified-report/synthetic-report.txt",
+      "status": "added",
+      "sha256": "8eb8338ec86912df07777e5d33d57b8a4b9efb8419a89d804e97c0c8c4655adc",
+      "baselineSha256": null
+    },
+    {
+      "path": "scripts/verified-gtfs-report.mjs",
+      "status": "added",
+      "sha256": "c6a65c57c808edbe05b14513e48d615ed5b29eaf59c1bd4e07552e542db9124e",
+      "baselineSha256": null
+    },
+    {
+      "path": "src/verified-gtfs-report.mjs",
+      "status": "added",
+      "sha256": "ba3c178a78ea24fedfbc11768d022ab37585569405ee796adfa65ad3b3b4fd31",
+      "baselineSha256": null
+    },
+    {
+      "path": "tests/verified-gtfs-report.test.mjs",
+      "status": "added",
+      "sha256": "d261804990965989f00137fd9b2aa96fc0b8ed4b622542f9e196a035b1c21a0c",
+      "baselineSha256": null
+    }
+  ]
+}

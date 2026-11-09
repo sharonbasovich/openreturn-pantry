@@ -1,0 +1,9 @@
+trip_id,arrival_time,departure_time,stop_id,stop_sequence
+loop,24:10:00,24:10:00,P,40
+return,24:55:00,24:55:00,A,20
+loop,23:40:00,23:40:00,A,0
+loop,24:00:00,24:02:00,A,30
+return,24:40:00,24:40:00,P,5
+loop,23:50:00,23:52:00,X,10
+removed,12:00:00,12:00:00,A,0
+removed,12:20:00,12:20:00,P,1

@@ -1,0 +1,6 @@
+PASS src/gtfs-artifact-json.mjs
+PASS src/verify-gtfs-receipt.mjs
+PASS src/gtfs-subset.mjs
+PASS scripts/import-gtfs-subset.mjs
+PASS scripts/verify-gtfs-receipt.mjs
+PASS tests/gtfs-generation-consistency.test.mjs

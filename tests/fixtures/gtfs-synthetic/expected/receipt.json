@@ -1,0 +1,216 @@
+{
+  "format": "openreturn-gtfs-subset-receipt",
+  "version": 1,
+  "adapterVersion": "1.0.0",
+  "reference": "https://gtfs.org/documentation/schedule/reference/",
+  "referenceReviewed": "2026-11-08",
+  "serviceDay": "2026-11-12",
+  "timeZone": "America/New_York",
+  "timeBasis": "gtfs-service-day-minutes",
+  "selection": {
+    "kind": "routeIds",
+    "ids": [
+      "R"
+    ],
+    "selectedTripIds": [
+      "loop",
+      "return"
+    ],
+    "inactiveScopedTripIds": [
+      "removed"
+    ],
+    "outOfScopeTripCount": 0
+  },
+  "services": [
+    {
+      "serviceId": "DAILY",
+      "calendarActive": true,
+      "exception": null,
+      "active": true
+    },
+    {
+      "serviceId": "EXTRA",
+      "calendarActive": false,
+      "exception": "added",
+      "active": true
+    },
+    {
+      "serviceId": "REMOVED",
+      "calendarActive": true,
+      "exception": "removed",
+      "active": false
+    }
+  ],
+  "routes": [
+    {
+      "routeId": "R",
+      "agencyId": "DEMO",
+      "agencyTimezone": "America/New_York"
+    }
+  ],
+  "stops": [
+    {
+      "stopId": "A",
+      "parentStation": null,
+      "localTimezone": "America/New_York"
+    },
+    {
+      "stopId": "P",
+      "parentStation": null,
+      "localTimezone": "America/New_York"
+    },
+    {
+      "stopId": "X",
+      "parentStation": null,
+      "localTimezone": "America/New_York"
+    }
+  ],
+  "inputs": [
+    {
+      "file": "agency.txt",
+      "bytes": 113,
+      "sha256": "f181c2a95ac7b5bde65e2c0ed8993629ee4398efa740d34340a92e89091ced41",
+      "rows": 1,
+      "role": "checked table"
+    },
+    {
+      "file": "calendar.txt",
+      "bytes": 204,
+      "sha256": "d3cc32f17cb8ac5eeef26062840eaf2f0ef2a4ce1b99e9275b0bea1101c85146",
+      "rows": 3,
+      "role": "checked table"
+    },
+    {
+      "file": "calendar_dates.txt",
+      "bytes": 67,
+      "sha256": "446071bf696a1221c71ea2c55c8eec9b87b4e61818b3892cf013e370620db427",
+      "rows": 2,
+      "role": "checked table"
+    },
+    {
+      "file": "routes.txt",
+      "bytes": 100,
+      "sha256": "4c8a262c2010f73ab4404eececac74c48d92d5f18837e2bf3ee4e376106b82a4",
+      "rows": 1,
+      "role": "checked table"
+    },
+    {
+      "file": "stop_times.txt",
+      "bytes": 288,
+      "sha256": "fd1a5e765e035de88e610f776d8b5defdb0a9eda2bad4dcdb80295bbaaa10b23",
+      "rows": 8,
+      "role": "checked table"
+    },
+    {
+      "file": "stops.txt",
+      "bytes": 149,
+      "sha256": "cee213033ea043b44fe8968c8b50035e483ee637eb3ebcd93b586d34b8ada8c6",
+      "rows": 4,
+      "role": "checked table"
+    },
+    {
+      "file": "trips.txt",
+      "bytes": 74,
+      "sha256": "03ae5f0cb77c88fbfc5f588df2deac68d99fc7a1037a9249209459a158c972de",
+      "rows": 3,
+      "role": "checked table"
+    }
+  ],
+  "templateHash": {
+    "encoding": "JSON.stringify of supplied template object, UTF-8",
+    "sha256": "25f469f0827a96c07c598fca7d443f2b36ced03e1a3a7b9fc3b46d41fbed41ce"
+  },
+  "output": {
+    "file": "scenario.json",
+    "encoding": "exportScenarioJson plus LF, UTF-8",
+    "bytes": 1401,
+    "sha256": "791bf84266470430c9e659d3d2f7923e563d3bf03ac0be4d77dec8145b3a161a",
+    "stops": 3,
+    "trips": 2,
+    "connections": 4,
+    "origins": 1
+  },
+  "connectionMap": [
+    {
+      "connectionId": "gtfs-leg-1",
+      "tripId": "loop",
+      "fromStopSequence": 0,
+      "toStopSequence": 10
+    },
+    {
+      "connectionId": "gtfs-leg-2",
+      "tripId": "loop",
+      "fromStopSequence": 10,
+      "toStopSequence": 30
+    },
+    {
+      "connectionId": "gtfs-leg-3",
+      "tripId": "loop",
+      "fromStopSequence": 30,
+      "toStopSequence": 40
+    },
+    {
+      "connectionId": "gtfs-leg-4",
+      "tripId": "return",
+      "fromStopSequence": 5,
+      "toStopSequence": 20
+    }
+  ],
+  "stopCalls": [
+    {
+      "tripId": "loop",
+      "stopSequence": 0,
+      "stopId": "A",
+      "arrival": 1420,
+      "departure": 1420
+    },
+    {
+      "tripId": "loop",
+      "stopSequence": 10,
+      "stopId": "X",
+      "arrival": 1430,
+      "departure": 1432
+    },
+    {
+      "tripId": "loop",
+      "stopSequence": 30,
+      "stopId": "A",
+      "arrival": 1440,
+      "departure": 1442
+    },
+    {
+      "tripId": "loop",
+      "stopSequence": 40,
+      "stopId": "P",
+      "arrival": 1450,
+      "departure": 1450
+    },
+    {
+      "tripId": "return",
+      "stopSequence": 5,
+      "stopId": "P",
+      "arrival": 1480,
+      "departure": 1480
+    },
+    {
+      "tripId": "return",
+      "stopSequence": 20,
+      "stopId": "A",
+      "arrival": 1495,
+      "departure": 1495
+    }
+  ],
+  "limitations": [
+    "Restricted scheduled-service projection, not GTFS compliance or a complete-feed validator. Input provenance and completeness are user assertions, not independently verified.",
+    "Only the explicitly selected service date and route/trip scope are represented. Other routes, trips and adjacent service dates may change the answer. Every selected trip retains its complete supplied stop chain.",
+    "All template and scenario times are GTFS service-day minutes in the agency timezone (noon minus 12 hours), not necessarily local wall-clock minutes on DST transition days. No timezone or daylight-saving conversion is performed; the browser only displays numeric service-day labels.",
+    "No walking, station access, fares, wheelchair access, capacity, eligibility, real-time disruption, queues, reliability, safe-travel or real-world feasibility claims. Origin and pantry access at the exact stop are user assumptions.",
+    "Transfers are possible only at identical stop IDs using the template buffer. No station/platform merging or cross-stop transfer inference. All supplied transfer rules are rejected, even outside scope.",
+    "Only regular scheduled pickup/drop-off, exact whole-minute times and positive-duration adjacent legs are supported. Selected frequency service, blocks, flexible service and unsupported files/fields are rejected.",
+    "The receipt is a separate provenance companion; scenario import into the unchanged browser does not preserve it. Keep both files. Hashes identify bytes, not authenticity, licensing or freshness."
+  ],
+  "templateInput": {
+    "bytes": 468,
+    "sha256": "feab9be8cc1d219ea2d943d96344e166692a254f3755f44c7f8b0b7ff2565de0"
+  }
+}

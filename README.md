@@ -65,9 +65,15 @@ CSV is not a guarantee against spreadsheet auto-conversion: import every ID colu
 
 ## Input and privacy
 
-The scenario format is documented in [docs/DATA_FORMAT.md](docs/DATA_FORMAT.md). Paste JSON to replace a complete scenario, or select CSV to replace only its timetable connections while retaining its existing stops, origins and settings. Both modes require validation and confirmation before replacement. CSV must describe an already selected service-day timetable; it does not infer or verify the retained service-day label. **This is not a GTFS importer.** Do not paste an unfiltered GTFS feed and assume its service calendars, pickup restrictions or transfers have been interpreted.
+The scenario format is documented in [docs/DATA_FORMAT.md](docs/DATA_FORMAT.md). Paste JSON to replace a complete scenario, or select CSV to replace only its timetable connections while retaining its existing stops, origins and settings. Both modes require validation and confirmation before replacement. CSV must describe an already selected service-day timetable; it does not infer or verify the retained service-day label. **The browser CSV helper is not a GTFS importer.** Do not paste an unfiltered GTFS feed and assume its service calendars, pickup restrictions or transfers have been interpreted.
 
 Application code makes no network requests, uses no analytics, and does not store scenario content in localStorage. The server hosting the app may receive ordinary page requests. Keep anonymous stop labels and scenario IDs, not client names, home addresses, or sensitive demographic information. Explicit exported files remain on the device where they are saved. Reloading discards unsaved work.
+
+## Optional offline GTFS subset adapter
+
+An optional, dependency-free Node CLI can project a **restricted scheduled-service subset** from local extracted GTFS files into scenario JSON plus a provenance/limitations receipt. Choose one service date and explicit routes or trips, and supply anonymous origin/settings assumptions in agency-timezone service-day minutes. It retains complete selected trip chains, repeated stops, dwell and 24+ hour times; unsupported restrictions fail instead of being silently discarded. The browser importer, routing model and package commands are unchanged.
+
+Start with the [synthetic example and exact input contract](docs/GTFS_SUBSET.md). This is not broad GTFS support, a complete-feed validator, real-feed validation or travel advice. Many ordinary feeds are intentionally rejected. Keep the receipt with the generated scenario.
 
 ## Model and limitations
 
@@ -90,3 +96,13 @@ This is a prototype, not a submitted event entry or a completed operational pilo
 The exhaustive test oracle now checks same-vehicle reboarding against the full trip chain, including omitted loop legs. `npm test` includes literal witness and fabricated-invalid-witness controls plus 120 deterministic looping timetables. Run `node scripts/verify-oracle-mutations.mjs` for five deliberately faulty local copies that must be detected. No packages or network are used.
 
 This corrects a test-verifier blind spot, not a reproduced production-routing error. Reachability and minimum-away comparisons alone cannot distinguish waiting to reboard from riding the whole loop. See [the oracle correction and scope](evidence/ORACLE_REBOARDING_REVIEW.md). Historical review counts elsewhere describe their original snapshots.
+
+### Check an offline GTFS receipt
+
+The optional [receipt replay checker](docs/GTFS_RECEIPT_VERIFICATION.md) checks exact scenario bytes and every companion receipt field against the original local feed/template. It is a separate, read-only Node command; browser and decision reports do not enforce receipts. Passing confirms replay consistency, not authenticity, freshness, intended date/scope or real-world feasibility.
+
+The optional offline GTFS adapter also offers an explicit [separate-trips block policy](docs/GTFS_SUBSET.md#optional-separate-trips-block-policy): original trip IDs stay separate, block membership is receipt provenance only, and all inter-trip changes retain normal transfer rules. Default receipt1 behavior is unchanged; this is not onboard block support or real-world feasibility evidence.
+
+### Generate a replay-checked offline report
+
+The optional [single-process GTFS report](docs/VERIFIED_GTFS_REPORT.md) performs full local receipt replay and derives the ordinary report from the same captured scenario bytes, with embedded service-date, selection, block-policy and digest provenance. This adds limited replay consistency, not feed authenticity, intended scope, currentness or real-world feasibility. Existing report commands and browser behavior are unchanged.

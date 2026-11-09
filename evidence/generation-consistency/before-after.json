@@ -1,0 +1,86 @@
+[
+  {
+    "version": "before",
+    "defect": "duplicate",
+    "generated": {
+      "status": 0,
+      "stdout": "Created scenario.json and receipt.json: 3 stops, 2 trips, 4 adjacent legs. Restricted schedule projection only; keep the receipt.",
+      "stderr": ""
+    },
+    "outputExists": true,
+    "tripsBytes": 74,
+    "receiptBytes": 6242,
+    "verified": {
+      "status": 1,
+      "stdout": "{\"ok\":false,\"error\":\"DUPLICATE_JSON_KEY\"}",
+      "stderr": ""
+    }
+  },
+  {
+    "version": "before",
+    "defect": "oversizedReceipt",
+    "generated": {
+      "status": 0,
+      "stdout": "Created scenario.json and receipt.json: 3 stops, 2 trips, 4 adjacent legs. Restricted schedule projection only; keep the receipt.",
+      "stderr": ""
+    },
+    "outputExists": true,
+    "tripsBytes": 4300074,
+    "receiptBytes": 4256251,
+    "verified": {
+      "status": 1,
+      "stdout": "{\"ok\":false,\"error\":\"INPUT_SIZE_LIMIT\"}",
+      "stderr": ""
+    }
+  },
+  {
+    "version": "before",
+    "defect": "outputInFeed",
+    "generated": {
+      "status": 0,
+      "stdout": "Created scenario.json and receipt.json: 3 stops, 2 trips, 4 adjacent legs. Restricted schedule projection only; keep the receipt.",
+      "stderr": ""
+    },
+    "outputExists": true,
+    "tripsBytes": 74,
+    "receiptBytes": 6242,
+    "verified": {
+      "status": 1,
+      "stdout": "{\"ok\":false,\"error\":\"UNSUPPORTED_FEED_ENTRY\"}",
+      "stderr": ""
+    }
+  },
+  {
+    "version": "after",
+    "defect": "duplicate",
+    "generated": {
+      "status": 1,
+      "stdout": "",
+      "stderr": "GTFS subset not created: DUPLICATE_JSON_KEY"
+    },
+    "outputExists": false,
+    "tripsBytes": 74
+  },
+  {
+    "version": "after",
+    "defect": "oversizedReceipt",
+    "generated": {
+      "status": 1,
+      "stdout": "",
+      "stderr": "GTFS subset not created: INVALID_JSON_INPUT"
+    },
+    "outputExists": false,
+    "tripsBytes": 4300074
+  },
+  {
+    "version": "after",
+    "defect": "outputInFeed",
+    "generated": {
+      "status": 1,
+      "stdout": "",
+      "stderr": "GTFS subset not created: Output directory must be outside the source feed."
+    },
+    "outputExists": false,
+    "tripsBytes": 74
+  }
+]

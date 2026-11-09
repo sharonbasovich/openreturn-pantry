@@ -1,0 +1,35 @@
+{
+  "scope": "Five deliberately faulty local copies; not mutation completeness or production proof",
+  "results": [
+    {
+      "name": "unmodified control",
+      "status": "passed",
+      "failedTests": 0
+    },
+    {
+      "name": "legacy trip-ID-only oracle",
+      "status": "detected",
+      "failedTests": 5
+    },
+    {
+      "name": "oracle ignores transfer buffer",
+      "status": "detected",
+      "failedTests": 16
+    },
+    {
+      "name": "oracle ignores transfer cap",
+      "status": "detected",
+      "failedTests": 4
+    },
+    {
+      "name": "runtime forgets transfer buffer",
+      "status": "detected",
+      "failedTests": 18
+    },
+    {
+      "name": "runtime treats skipped trip legs as on-board",
+      "status": "detected",
+      "failedTests": 5
+    }
+  ]
+}

@@ -1,0 +1,105 @@
+OPENRETURN / LOCAL REPLAY PROVENANCE
+Check: local-replay; receipt 1; adapter 1.0.0.
+Receipt-declared service day: 2026-11-12
+Replayed agency timezone: "America/New_York"
+Replayed time basis: "gtfs-service-day-minutes"
+Receipt-declared selection: routeIds ["R"]
+Selected active trips: ["loop","return"]
+Block policy: reject-blocks
+Scenario SHA-256 (exact supplied UTF-8 bytes): 791bf84266470430c9e659d3d2f7923e563d3bf03ac0be4d77dec8145b3a161a
+Receipt SHA-256 (exact supplied UTF-8 bytes): 5bb4555232d7ef77badd117e16e66e3c7297330f753caee201b534b0292f1c20
+Exact scenario bytes and all receipt fields match this adapter replay of supplied local inputs. Date/scope are receipt-declared, not confirmed user intent. Hashes are not signatures; source completeness, currentness, licensing and real-world feasibility are not verified.
+The feed is not independently authenticated. This does not confirm intended date/scope, source completeness or currentness, licensing, access, or real-world feasibility.
+The report below derives from the same scenario bytes checked in this process. The CLI reads inputs once, sequentially; this is not an atomic filesystem snapshot. A consistently replaced input set can pass.
+Reject-blocks policy: selected trips with nonempty block IDs are refused; this is not block support.
+Replayed adapter limitations:
+- Restricted scheduled-service projection, not GTFS compliance or a complete-feed validator. Input provenance and completeness are user assertions, not independently verified.
+- Only the explicitly selected service date and route/trip scope are represented. Other routes, trips and adjacent service dates may change the answer. Every selected trip retains its complete supplied stop chain.
+- All template and scenario times are GTFS service-day minutes in the agency timezone (noon minus 12 hours), not necessarily local wall-clock minutes on DST transition days. No timezone or daylight-saving conversion is performed; the browser only displays numeric service-day labels.
+- No walking, station access, fares, wheelchair access, capacity, eligibility, real-time disruption, queues, reliability, safe-travel or real-world feasibility claims. Origin and pantry access at the exact stop are user assumptions.
+- Transfers are possible only at identical stop IDs using the template buffer. No station/platform merging or cross-stop transfer inference. All supplied transfer rules are rejected, even outside scope.
+- Only regular scheduled pickup/drop-off, exact whole-minute times and positive-duration adjacent legs are supported. Selected frequency service, blocks, flexible service and unsupported files/fields are rejected.
+- The receipt is a separate provenance companion; scenario import into the unchanged browser does not preserve it. Keep both files. Hashes identify bytes, not authenticity, licensing or freshness.
+The unchanged decision-sheet body retains its general unverified-schedule warnings; this prefix adds only the limited local replay check.
+
+OPENRETURN / DECISION SHEET
+Synthetic overnight GTFS subset
+Service day: 2026-11-12
+Data: user-supplied. Unverified scheduled stop-to-stop scenarios, not travel advice.
+
+Current: 00:10 +1d–01:10 +1d — 1/1 origins
+Best tested: 00:10 +1d–01:10 +1d — 1/1 origins
+Gained: None
+Lost: None
+
+APPLIED CONSTRAINTS
+Current start: 00:10 +1d
+Staffed minutes: 60
+Earliest start: 00:10 +1d
+Latest start: 00:40 +1d
+Visit minutes: 15
+Search step (min): 15
+Transfer buffer (min): 10
+Max transfers / leg: 0
+
+SCHEDULE BURDEN AND HEADROOM
+Ranges cover feasible origin scenarios only, not people. Witnesses minimize time away, not waiting.
+Headroom is arithmetic for the displayed scheduled witness, not a guarantee of delay tolerance.
+CURRENT 00:10 +1d–01:10 +1d: waits 15 min; time away 53 min.
+  Anonymous synthetic origin (synthetic-origin): wait 15 = before visit 0 + after visit 15 + transfers 0 + on-board dwell 0 min; riding 23 min.
+  Remaining minutes: away allowance 77; home deadline 45; closing 45; return departure 15; minimum transfer/reboarding buffer headroom not applicable.
+BEST TESTED 00:10 +1d–01:10 +1d: waits 15 min; time away 53 min.
+  Anonymous synthetic origin (synthetic-origin): wait 15 = before visit 0 + after visit 15 + transfers 0 + on-board dwell 0 min; riding 23 min.
+  Remaining minutes: away allowance 77; home deadline 45; closing 45; return departure 15; minimum transfer/reboarding buffer headroom not applicable.
+Highest-coverage grid starts (2): 00:10 +1d, 00:25 +1d.
+The selected tie-break favors the start closest to current hours, then earlier start. Equal counts can cover different origins or waits.
+
+ASSUMPTION CHECKS
+Hypothetical changes, not measured delays or probabilities. Fixed window: 00:10 +1d–01:10 +1d. Reoptimization may change hours; it does not rescue the fixed window.
+Applied visit 15 min; transfer buffer 10 min.
+Visit +15 minutes: visit 30 min; transfer buffer 10 min.
+  Current hours with changed assumptions: 1/1.
+  Keep applied best hours 00:10 +1d–01:10 +1d: 1/1; lost from applied best: None; gained: None.
+  Search again 00:10 +1d–01:10 +1d: 1/1; net +0 versus current hours under the SAME changed assumptions.
+  Search-again losses from applied best: None; gains: None.
+  Search-again losses versus changed current: None; gains: None.
+  Highest-coverage grid starts: 00:10 +1d.
+Transfer buffer +5 minutes: visit 15 min; transfer buffer 15 min.
+  Current hours with changed assumptions: 1/1.
+  Keep applied best hours 00:10 +1d–01:10 +1d: 1/1; lost from applied best: None; gained: None.
+  Search again 00:10 +1d–01:10 +1d: 1/1; net +0 versus current hours under the SAME changed assumptions.
+  Search-again losses from applied best: None; gains: None.
+  Search-again losses versus changed current: None; gains: None.
+  Highest-coverage grid starts: 00:10 +1d, 00:25 +1d.
+Both changes: visit 30 min; transfer buffer 15 min.
+  Current hours with changed assumptions: 1/1.
+  Keep applied best hours 00:10 +1d–01:10 +1d: 1/1; lost from applied best: None; gained: None.
+  Search again 00:10 +1d–01:10 +1d: 1/1; net +0 versus current hours under the SAME changed assumptions.
+  Search-again losses from applied best: None; gains: None.
+  Search-again losses versus changed current: None; gains: None.
+  Highest-coverage grid starts: 00:10 +1d.
+
+CURRENT: 00:10 +1d–01:10 +1d
+
+Anonymous synthetic origin (synthetic-origin)
+Origin stop: Synthetic origin, east; leave after 23:40; home by 01:40 +1d; maximum away 130 min.
+Outbound 00:02 +1d–00:10 +1d: Synthetic origin, east → Synthetic pantry stop [trip loop, connection gtfs-leg-3]
+Visit 00:10 +1d–00:25 +1d at Synthetic pantry stop
+Return 00:40 +1d–00:55 +1d: Synthetic pantry stop → Synthetic origin, east [trip return, connection gtfs-leg-4]
+Back 00:55 +1d; 53 minutes away; 15 scheduled wait minutes.
+
+BEST TESTED: 00:10 +1d–01:10 +1d
+
+Anonymous synthetic origin (synthetic-origin)
+Origin stop: Synthetic origin, east; leave after 23:40; home by 01:40 +1d; maximum away 130 min.
+Outbound 00:02 +1d–00:10 +1d: Synthetic origin, east → Synthetic pantry stop [trip loop, connection gtfs-leg-3]
+Visit 00:10 +1d–00:25 +1d at Synthetic pantry stop
+Return 00:40 +1d–00:55 +1d: Synthetic pantry stop → Synthetic origin, east [trip return, connection gtfs-leg-4]
+Back 00:55 +1d; 53 minutes away; 15 scheduled wait minutes.
+
+LIMITATIONS
+Counts represent origins, not people served or real-world impact. Equal staffed duration does not establish fairness. Review every lost origin.
+Best means highest reachable count among tested start times only, then closest to current start, then earlier start; a coarse step may miss better windows. One feasible witness is shown per origin, not a guaranteed itinerary.
+One supplied service-day timetable. No walking, live delays, cancellations, fares, wheelchair accessibility, capacity, demand, or automatic service-calendar / GTFS verification.
+Verify the date, timetable, stop access and local assumptions with operators and the community before changing real opening hours.
+No accounts, telemetry or autosave. This export contains applied data only; unapplied drafts are excluded.

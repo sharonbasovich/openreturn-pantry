@@ -1,0 +1,4 @@
+route_id,service_id,trip_id
+R,DAILY,loop
+R,EXTRA,return
+R,REMOVED,removed
