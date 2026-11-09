@@ -1,0 +1,45 @@
+{
+  "verifiedPublicModelBlob": "0ce49df6ee51356c86e5af6eb75b8ac38aaa96bf",
+  "baselineCommit": "8fcb2462b481b3b49aa1f15b02de00c01a0b1944",
+  "unchanged": [
+    {
+      "path": "src/app.mjs",
+      "sha256": "2bd9e3755e12c9dceb3d007139b4877b467ffd08f8c304355cc38a6647f6c187"
+    },
+    {
+      "path": "src/decision.mjs",
+      "sha256": "74e326e4d1c9fb6694ea9f980e50701ef881242501d49f46abf55219e67ed541"
+    },
+    {
+      "path": "src/journey.mjs",
+      "sha256": "29226c4e96138463a194064d9c0b63604027333cc9888bf293bc9d74e5c637bb"
+    },
+    {
+      "path": "src/import.mjs",
+      "sha256": "c8297d45db951b5daf11a7c3c5716b7caea51dda2b99cb0aeb2d55850b36293c"
+    },
+    {
+      "path": "src/report.mjs",
+      "sha256": "dcc7795213c57a0a8149b14ee2b341ed22cc5c0f3ab8085070ff29f60e487462"
+    },
+    {
+      "path": "src/sample.mjs",
+      "sha256": "57ccad6dafacff0f73dd23dc7e66ea7f968ea70155cfaa59bbac521d9eaf59a4"
+    },
+    {
+      "path": "src/style.css",
+      "sha256": "9bbd8da73a4be2bfdd31be0b53de6239aaa16e71fc0a8b1c9af35566c4a1f360"
+    },
+    {
+      "path": "index.html",
+      "sha256": "a984139455e9194827879cfd52087ac9cdaf6ffac2f33f64b6b8f20de047d012"
+    },
+    {
+      "path": "package.json",
+      "sha256": "b4a289223a671524a4ba46220589f2af38775ad563560de07247dd97d2b1f7c3"
+    }
+  ],
+  "existingModelPrefixByteIdentical": true,
+  "existingModelBytes": 13784,
+  "newModelBytes": 18355
+}

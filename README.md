@@ -40,6 +40,12 @@ Origin scenarios at the same stop can share route searches when every relevant c
 
 ## Decision audit and offline report
 
+An optional [integer-minute coverage audit](docs/COVERAGE_RANGES.md) identifies
+feasible opening-start ranges that a coarse grid can miss, without changing
+the existing browser or its grid. Run `node scripts/coverage-ranges.mjs` for the
+synthetic example, or provide a scenario JSON path. It preserves explicit
+origin gains/losses and distinguishes range start times from opening windows.
+
 The audit separates four kinds of scheduled waiting: before the visit, after the visit, between vehicles, and on-board dwell. For each feasible witness it reports remaining minutes against the away allowance, home deadline, closing time, first return departure and tightest vehicle-change buffer. An absent return or vehicle change is **not applicable**, not zero headroom. Summary ranges exclude infeasible origins; a window with no feasible journeys does not report zero waiting.
 
 Three explicit hypothetical checks add 15 visit minutes, add five transfer-buffer minutes, or do both. Each compares the applied best hours held fixed with a fresh grid search, identifies specific lost and gained origins, and compares the new best against current hours under the **same changed assumptions**. An out-of-bounds hypothesis is labeled not applicable instead of being clamped. Checks never change the applied scenario or draft, and are cleared when new data/settings are applied. They are not an exhaustive stress test or evidence of delay probabilities.

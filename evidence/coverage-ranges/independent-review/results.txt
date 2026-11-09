@@ -1,0 +1,3 @@
+PASS 209 scenarios / 8069 independently enumerated integer-start coverage sets; ranking, partitions, grid compatibility, deep-frozen inputs, output isolation.
+ef62f64c5c97be70a44882bc365306d23fca140c92045ae50da3cec85fbae477 src/model.mjs
+adfeeba1f086f0b1371c3b4bee8f89202cbd78016ad51e13f731811893aa7adb scripts/coverage-ranges.mjs

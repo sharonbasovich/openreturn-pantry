@@ -211,3 +211,70 @@ export function formatTime(minute) {
   const time=`${String(Math.floor(minute%1440/60)).padStart(2,'0')}:${String(minute%60).padStart(2,'0')}`;
   return time+(minute>=1440?' +1d':'');
 }
+
+/** Exact coverage over every INTEGER opening-start minute in the supplied
+ * bounds. This optional audit does not change optimizeWindows or its grid.
+ * It reports coverage sets, not witnesses or continuous-time feasibility.
+ *
+ * For one retained outbound departure d/arrival a, let R be the latest minute
+ * from which a return can start and reach home by min(homeBy,d+maxAway).
+ * A visit of v minutes fits an opening of length L exactly when
+ * a+v <= R and a+v-L <= start <= R-v. Earlier outbound arrival never removes
+ * a return opportunity. Return feasibility is monotone in its ready time, so
+ * bounded binary search finds R using the unchanged routing engine.
+ */
+export function analyzeCoverageRanges(input) {
+  const scenario=validateScenario(input), ctx=prepare(scenario);
+  const {earliestStart,latestStart,openMinutes,visitMinutes,baselineStart,stepMinutes}=scenario.settings;
+  const latestReturns=new Map(); let returnSearches=0;
+  const latestReturn=(stop,deadline)=>{
+    const key=JSON.stringify([stop,deadline]);
+    if(latestReturns.has(key))return latestReturns.get(key);
+    const feasible=ready=>{returnSearches++;return route(ctx,scenario.pantryStop,stop,ready,deadline)!==null;};
+    if(!feasible(0)){latestReturns.set(key,null);return null;}
+    let low=0,high=deadline;
+    while(low<high){const middle=Math.ceil((low+high)/2);if(feasible(middle))low=middle;else high=middle-1;}
+    latestReturns.set(key,low);return low;
+  };
+  const originRanges=scenario.origins.map(origin=>{
+    const intervals=[];
+    const add=(start,end)=>{start=Math.max(earliestStart,start);end=Math.min(latestStart,end);if(start<=end)intervals.push({start,end});};
+    if(origin.stopId===scenario.pantryStop){
+      if(visitMinutes<=origin.maxAwayMinutes && origin.leaveAfter+visitMinutes<=origin.homeBy)
+        add(origin.leaveAfter+visitMinutes-openMinutes,origin.homeBy-visitMinutes);
+    }else for(const out of outwardOptions(ctx,origin)){
+      const latest=latestReturn(origin.stopId,Math.min(origin.homeBy,out.depart+origin.maxAwayMinutes));
+      if(latest!==null && out.arrival+visitMinutes<=latest)
+        add(out.arrival+visitMinutes-openMinutes,latest-visitMinutes);
+    }
+    intervals.sort((a,b)=>a.start-b.start||a.end-b.end);
+    const merged=[];
+    for(const interval of intervals){const last=merged.at(-1);if(last&&interval.start<=last.end+1)last.end=Math.max(last.end,interval.end);else merged.push({...interval});}
+    return {originId:origin.id,intervals:merged};
+  });
+  const originIdsAt=start=>originRanges.filter(origin=>origin.intervals.some(interval=>interval.start<=start&&start<=interval.end)).map(origin=>origin.originId);
+  const points=new Set([earliestStart,latestStart+1]);
+  for(const origin of originRanges)for(const interval of origin.intervals){points.add(interval.start);points.add(interval.end+1);}
+  const boundaries=[...points].sort((a,b)=>a-b),ranges=[];
+  for(let i=0;i<boundaries.length-1;i++){
+    const start=boundaries[i],end=boundaries[i+1]-1,originIds=originIdsAt(start),last=ranges.at(-1);
+    if(last && JSON.stringify(last.originIds)===JSON.stringify(originIds))last.end=end;
+    else ranges.push({start,end,reachable:originIds.length,originIds});
+  }
+  const at=start=>{const originIds=originIdsAt(start);return {start,end:start+openMinutes,reachable:originIds.length,originIds};};
+  const rank=(a,b)=>b.reachable-a.reachable||Math.abs(a.start-baselineStart)-Math.abs(b.start-baselineStart)||a.start-b.start;
+  const maximum=Math.max(...ranges.map(range=>range.reachable));
+  const bestRanges=ranges.filter(range=>range.reachable===maximum).map(range=>({...range,originIds:[...range.originIds]}));
+  const best=bestRanges.map(range=>at(Math.max(range.start,Math.min(range.end,baselineStart)))).sort(rank)[0];
+  const grid=[];for(let start=earliestStart;start<=latestStart;start+=stepMinutes)grid.push(at(start));
+  const gridBest=[...grid].sort(rank)[0],baseline=at(baselineStart);
+  const difference=(a,b)=>a.filter(id=>!b.includes(id));
+  return {
+    domain:{earliestStart,latestStart,openMinutes,total:scenario.origins.length},
+    originRanges,ranges,bestRanges,best,baseline,grid,gridBest,
+    gridMissesHigherCoverage:best.reachable>gridBest.reachable,
+    gainedVersusGrid:difference(best.originIds,gridBest.originIds),lostVersusGrid:difference(gridBest.originIds,best.originIds),
+    gainedVersusCurrent:difference(best.originIds,baseline.originIds),lostVersusCurrent:difference(baseline.originIds,best.originIds),
+    diagnostics:{returnSearches,cachedReturnDeadlines:latestReturns.size}
+  };
+}
