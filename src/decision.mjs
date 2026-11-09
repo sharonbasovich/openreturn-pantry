@@ -1,3 +1,4 @@
+import { reportText } from './report-text.mjs';
 import { continuationCheck } from './journey.mjs';
 import { validateScenario, optimizeWindows, formatTime } from './model.mjs';
 
@@ -106,14 +107,14 @@ export function decisionAuditLines(audit, sensitivity = null) {
   // scenario to an export. The application also clears checks on every commit.
   if (sensitivity && JSON.stringify(audit.scenario) !== JSON.stringify(sensitivity.scenario))
     throw new Error('Assumption checks belong to different applied data. Run them again.');
-  const labels = ids => ids.map(id => audit.scenario.origins.find(o => o.id === id)?.label ?? id).join(', ') || 'None';
+  const labels = ids => ids.map(id => reportText(audit.scenario.origins.find(o => o.id === id)?.label ?? id)).join(', ') || 'None';
   const lines = ['SCHEDULE BURDEN AND HEADROOM',
     'Ranges cover feasible origin scenarios only, not people. Witnesses minimize time away, not waiting.',
     'Headroom is arithmetic for the displayed scheduled witness, not a guarantee of delay tolerance.'];
   for (const [label, window] of [['CURRENT', audit.baseline], ['BEST TESTED', audit.best]]) {
     lines.push(`${label} ${windowLabel(window)}: waits ${rangeLabel(window.waitRange)}; time away ${rangeLabel(window.awayRange)}.`);
     for (const j of window.journeys) lines.push(
-      `  ${j.label} (${j.originId}): wait ${j.waitMinutes} = before visit ${j.waits.beforeVisit} + after visit ${j.waits.afterVisit} + transfers ${j.waits.transfers} + on-board dwell ${j.waits.onBoard} min; riding ${j.ridingMinutes} min.`,
+      `  ${reportText(j.label)} (${reportText(j.originId)}): wait ${j.waitMinutes} = before visit ${j.waits.beforeVisit} + after visit ${j.waits.afterVisit} + transfers ${j.waits.transfers} + on-board dwell ${j.waits.onBoard} min; riding ${j.ridingMinutes} min.`,
       `  Remaining minutes: away allowance ${j.headroom.away}; home deadline ${j.headroom.home}; closing ${j.headroom.closing}; return departure ${j.headroom.returnDeparture ?? 'not applicable'}; minimum transfer/reboarding buffer headroom ${j.headroom.transfer ?? 'not applicable'}.`);
   }
   lines.push(`Highest-coverage grid starts (${audit.tiedBestStarts.length}): ${audit.tiedBestStarts.map(formatTime).join(', ')}.`,
