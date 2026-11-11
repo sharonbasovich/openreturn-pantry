@@ -1,7 +1,7 @@
 import {test,expect} from '@playwright/test';
 import {readFile} from 'node:fs/promises';
 import {createHash} from 'node:crypto';
-import {capacityFixture} from './fixture.mjs';
+import {capacityFixture,distinctConstraintFixture} from './fixture.mjs';
 import {SAMPLE} from '../../src/sample.mjs';
 import {auditDecision,auditSensitivity} from '../../src/decision.mjs';
 import {validateScenario} from '../../src/model.mjs';
@@ -139,4 +139,89 @@ test('INJECTED: heavy applied scenario cancellation retains prior heavy checks a
   const before=await snapshot(page);
   for(const [trigger,region] of [['#import-apply','#planner'],[apply,'#planner'],['#check-assumptions','#assumption-check']]){await heldCancel(page,request,trigger,region);expect(await snapshot(page)).toEqual(before);}
   await checks(page);expect(await snapshot(page)).toEqual(before);
+});
+
+
+// Passive message observation only: the native Worker subclass delegates creation,
+// posting and termination unchanged. No synthetic result replaces model output.
+async function observeNativeMessages(page){
+  await page.addInitScript(()=>{
+    window.__qaWorkerMessages=[];
+    const NativeWorker=window.Worker;
+    window.Worker=class extends NativeWorker {
+      constructor(...args){super(...args);this.addEventListener('message',event=>window.__qaWorkerMessages.push(event.data));}
+    };
+  });
+}
+async function importDistinct(page){
+  await page.locator('#data-editor summary').click();
+  await page.locator('#import-text').fill(JSON.stringify(distinctConstraintFixture()));
+  await page.locator('#import-apply').click();
+  await expect(page.locator('#confirm-dialog')).toBeVisible();
+  await page.locator('#confirm-accept').click();
+  await expect(page.locator('#window-chart button')).toHaveCount(48);await idle(page);
+}
+
+test('EXACT: 24 distinct constraints complete in native workers, results and saved exports match at 390px',async({page,request},info)=>{
+  await page.setViewportSize({width:390,height:844});await observeNativeMessages(page);
+  const errors=[],workers=[];page.on('pageerror',e=>errors.push(e.message));page.on('worker',w=>workers.push(w.url()));
+  const response=await request.get('/src/calculation-worker.mjs');
+  expect(response.headers()['x-openreturn-qa-mode']).toBe('exact');
+  expect((await response.body()).equals(await readFile(new URL('../../src/calculation-worker.mjs',import.meta.url)))).toBeTruthy();
+  await ready(page);await importDistinct(page);
+  const scenario=validateScenario(distinctConstraintFixture()),audit=auditDecision(scenario),sensitivity=auditSensitivity(scenario);
+  const completed=await page.evaluate(()=>window.__qaWorkerMessages.filter(m=>m.ok===true));
+  expect(completed).toHaveLength(2);
+  expect(completed[1].result).toEqual({normalized:scenario,result:audit.comparison,decision:audit});
+  await expect(page.locator('.card-count').nth(0)).toHaveText('9 / 24 origins');
+  await expect(page.locator('.card-count').nth(1)).toHaveText('19 / 24 origins');
+  await expect(page.locator('#origin-list button')).toHaveCount(24);
+  await save(page,info,'txt',buildDecisionSheet(audit),'distinct-before-checks');
+  await checks(page);
+  expect(await page.evaluate(()=>window.__qaWorkerMessages.at(-1).result)).toEqual(sensitivity);
+  await save(page,info,'txt',buildDecisionSheet(audit,sensitivity),'distinct-with-checks');
+  await save(page,info,'json',exportScenarioJson(scenario),'distinct');
+  await save(page,info,'csv',connectionsToCsv(scenario.connections),'distinct');
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+  await page.screenshot({path:info.outputPath('distinct-completed-390.png'),fullPage:true});
+  await info.attach('distinct-workload',{body:JSON.stringify({synthetic:true,origins:24,distinctConstraintTuples:24,connections:1200,windows:48,reachableByWindow:audit.windows.map(w=>w.reachable),scenarioSha256:sha(JSON.stringify(distinctConstraintFixture()))}),contentType:'application/json'});
+  expect(workers).toHaveLength(3);expect(workers.every(url=>url.endsWith('/src/calculation-worker.mjs'))).toBeTruthy();expect(errors).toEqual([]);
+});
+
+test('Distinct workload: INJECTED held busy screenshot then EXACT native cancellation and recovery at 320px',async({page,request},info)=>{
+  await page.setViewportSize({width:320,height:844});await observeNativeMessages(page);await ready(page);await importDistinct(page);await checks(page);
+  const scenario=validateScenario(distinctConstraintFixture()),audit=auditDecision(scenario),sensitivity=auditSensitivity(scenario);
+  await save(page,info,'txt',buildDecisionSheet(audit,sensitivity),'distinct-before-cancel');
+  await page.locator('#window-chart button').first().click();await page.locator('#origin-list button').last().click();
+  await page.locator('#field-visitMinutes').fill('19');await page.locator('#import-text').fill(JSON.stringify(distinctConstraintFixture())+'\n');
+  const before=await snapshot(page);await mode(request,'held');
+  const created=page.waitForEvent('worker');await page.locator('#check-assumptions').click();const worker=await created;
+  expect(worker.url()).toMatch(/\/src\/calculation-worker\.mjs$/);
+  await expect(page.locator('#assumption-check')).toHaveAttribute('aria-busy','true');
+  const cancel=page.locator('#cancel-calculation');await expect(cancel).toBeFocused();await expect(cancel).toBeEnabled();
+  expect(await page.locator('button,input,select,textarea').evaluateAll(es=>es.filter(e=>e.id!=='cancel-calculation').every(e=>e.disabled))).toBeTruthy();
+  const box=await cancel.boundingBox();expect(box.x).toBeGreaterThanOrEqual(0);expect(box.y).toBeGreaterThanOrEqual(0);expect(box.x+box.width).toBeLessThanOrEqual(320);expect(box.y+box.height).toBeLessThanOrEqual(844);expect(box.height).toBeGreaterThanOrEqual(40);
+  expect(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth)).toBeTruthy();
+  await page.screenshot({path:info.outputPath('distinct-held-busy-320.png')});
+  const closed=new Promise(resolve=>worker.once('close',resolve));await page.keyboard.press('Enter');await closed;await idle(page);
+  await expect(page.locator('#assumption-check')).not.toHaveAttribute('aria-busy','true');
+  await expect(page.locator('#check-assumptions')).toBeFocused();expect(await snapshot(page)).toEqual(before);
+  // Separate exact native job: cancel promptly, without screenshot/export work
+  // between Worker creation and Cancel. Busy alone is not a routing checkpoint.
+  await mode(request,'exact');
+  const exactCreated=page.waitForEvent('worker');
+  await page.locator('#check-assumptions').click();const exactWorker=await exactCreated;
+  const exactClosed=new Promise(resolve=>exactWorker.once('close',resolve));
+  await expect(cancel).toBeFocused();await expect(cancel).toBeEnabled();
+  await expect(page.locator('#assumption-check')).toHaveAttribute('aria-busy','true');
+  await page.keyboard.press('Enter');await exactClosed;await idle(page);
+  await expect(page.locator('#check-assumptions')).toBeFocused();
+  expect(await snapshot(page)).toEqual(before);
+  await expect(page.locator('#sensitivity-status')).toContainText('Calculation cancelled.');
+  await info.attach('distinct-cancellation-scope',{body:JSON.stringify({claim:'Held mode supplies deterministic busy geometry evidence. A separate exact-source native worker is created and cancelled while the UI is busy; this is not proof that routing started or of cancellation at a particular instruction.'}),contentType:'application/json'});
+  // The next response is exact source. New work must succeed, preserve drafts,
+  // and reproduce prior checks/export after the previous worker has closed.
+  await checks(page);expect(await snapshot(page)).toEqual(before);
+  expect(await page.evaluate(()=>window.__qaWorkerMessages.at(-1).result)).toEqual(sensitivity);
+  await save(page,info,'txt',buildDecisionSheet(audit,sensitivity),'distinct-after-recovery');
 });

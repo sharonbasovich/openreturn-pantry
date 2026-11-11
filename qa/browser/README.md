@@ -79,3 +79,36 @@ probe, and compares fallback text with only the corresponding CRLF-to-LF change.
 Actual downloaded bytes remain strictly compared without normalization. TXT/JSON
 fallback comparisons are unchanged. The failed run remains evidence; the revised
 assertion still needs a new hosted run before claiming an all-green browser pass.
+
+## Distinct-constraint regression addition
+
+The original capacity fixture/tests remain unchanged. A second deterministic,
+explicitly synthetic workload keeps 1,200 connections and 48 starts but assigns
+24 different `(stopId, leaveAfter, homeBy, maxAwayMinutes)` tuples, including 24
+unique home deadlines. These are constraint scenarios, not people or private
+schedules. Static checks require the entire coverage-count sequence (4 through
+19 and down to zero), baseline 9/24 versus best 19/24, different reachable-origin
+sets, and sensitivity changes (8 fixed / 9 reoptimized for the longer visit).
+This prevents accidentally reverting to equivalent-origin cache coverage.
+
+The new EXACT completion case at 390px observes actual native Worker responses
+with a passive test-only subclass, without changing posting/termination or
+production bytes. It compares full comparison and sensitivity results to the
+synchronous model, then checks saved TXT before/after assumptions and JSON/CSV
+bytes. This remains a worker/UI/serializer parity oracle, not an independent
+routing oracle. A completed-results screenshot and fixture SHA are retained.
+
+A second case at 320px captures the busy Cancel geometry **before cancellation**
+with the existing INJECTED held worker. Then it starts a separate EXACT native
+sensitivity worker and promptly cancels while the UI is busy, asserts worker
+closure, focus restoration and full prior state, and runs exact checks again to
+prove recovery and saved-export parity. Worker creation and busy UI do not prove
+routing has begun or identify the instruction where termination happened. The
+exact cancellation test intentionally fails if work completes before Cancel;
+it does not silently skip, substitute a held worker, or claim a mid-routing pass.
+The held screenshot is explicitly labeled; no production runtime is modified,
+no repeated-computation loop or new artificial delay is introduced.
+
+These two additional browser cases have not been executed locally. They require
+the authorized hosted workflow before browser acceptance can be claimed. Local
+syntax/fixture and Node checks alone do not establish native-browser behavior.
