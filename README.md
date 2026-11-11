@@ -55,6 +55,10 @@ node scripts/decision-sheet.mjs > decision-sheet.txt
 node scripts/decision-sheet.mjs your-scenario.json > decision-sheet.txt
 ```
 
+The terminal accepts regular UTF-8 JSON files up to 4,000,000 raw bytes. Invalid UTF-8, JSON with a leading BOM, directories, symbolic-link inputs and special files are rejected without a report on stdout. Reads are bounded even if a file grows; they are not atomic snapshots, so avoid editing the file during export. With no input path, the synthetic sample is unchanged.
+
+Human-readable reports render control characters, line separators, bidirectional formatting controls and unpaired surrogates in supplied text as visible `\uXXXX` escapes. Backslashes are doubled so literal escape sequences remain distinguishable. Ordinary Unicode and quotes remain readable. Scenario JSON preserves the original text exactly.
+
 The terminal report includes all three assumption checks. A browser report includes them only after they have been run for the current applied data; otherwise it explicitly states that they were not run. [Synthetic report example](evidence/decision-sheet-synthetic.txt).
 
 ## Exact backup and restricted CSV
