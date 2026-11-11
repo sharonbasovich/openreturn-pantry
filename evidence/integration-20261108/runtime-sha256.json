@@ -1,0 +1,13 @@
+{
+  "index.html": "6f2f4a6cc445e00129bd4d75679b549bf4970a294bc7e200fc31c412fb9d76c3",
+  "src/app.mjs": "fa704e47a8c7284f3ef37eefc4dfcfeeaecf4f81547d4f0c26fa162a14a64342",
+  "src/calculation-worker.mjs": "7406c5d8076c9600b668cf833f98f33a9461e1a60473b393da48c574261f77f5",
+  "src/calculation.mjs": "33ddbe4951094cbcf4a5060877f1f8c76a65e028fa65417dc11a4b6a18a0e75d",
+  "src/decision.mjs": "74e326e4d1c9fb6694ea9f980e50701ef881242501d49f46abf55219e67ed541",
+  "src/import.mjs": "c8297d45db951b5daf11a7c3c5716b7caea51dda2b99cb0aeb2d55850b36293c",
+  "src/journey.mjs": "29226c4e96138463a194064d9c0b63604027333cc9888bf293bc9d74e5c637bb",
+  "src/model.mjs": "24a57069e21a3ad082ff2cdb62dcd977bf63056468a019b416dad992bb443cc2",
+  "src/report.mjs": "dcc7795213c57a0a8149b14ee2b341ed22cc5c0f3ab8085070ff29f60e487462",
+  "src/sample.mjs": "57ccad6dafacff0f73dd23dc7e66ea7f968ea70155cfaa59bbac521d9eaf59a4",
+  "src/style.css": "8c627be4c3375d95827f8257a42af353df3c637d7926784cc8648ce4946e0914"
+}

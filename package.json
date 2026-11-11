@@ -1,13 +1,14 @@
 {
   "name": "openreturn",
-  "version": "0.2.2",
+  "version": "0.3.0-preview.1",
   "private": true,
   "type": "module",
   "scripts": {
     "test": "node --test tests/*.test.mjs",
-    "check": "node --check src/model.mjs && node --check src/journey.mjs && node --check src/app.mjs && node --check src/import.mjs && node --check src/decision.mjs && node --check src/report.mjs && node --check src/report-text.mjs && node --check scripts/decision-sheet.mjs && node --check scripts/read-scenario-file.mjs && node --check scripts/benchmark-routing-cache.mjs",
+    "check": "node --check src/model.mjs && node --check src/journey.mjs && node --check src/app.mjs && node --check src/import.mjs && node --check src/decision.mjs && node --check src/report.mjs && node --check src/report-text.mjs && node --check scripts/decision-sheet.mjs && node --check scripts/read-scenario-file.mjs && node --check scripts/benchmark-routing-cache.mjs && node --check src/calculation.mjs && node --check src/calculation-worker.mjs",
     "serve": "python3 -m http.server 4193",
     "report": "node scripts/decision-sheet.mjs",
-    "benchmark:cache": "node scripts/benchmark-routing-cache.mjs"
+    "benchmark:cache": "node scripts/benchmark-routing-cache.mjs",
+    "verify:workers": "node scripts/verify-worker-protocol.mjs && node scripts/verify-worker-threads.mjs"
   }
 }

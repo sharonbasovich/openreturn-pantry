@@ -1,0 +1,12 @@
+{
+  "name": "openreturn-browser-regression",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "playwright test",
+    "check": "node --check server.mjs && node --check regression.spec.mjs && node --check playwright.config.mjs && node verify-fixture.mjs && node --check subpath-policy.mjs && node --check subpath-server.mjs && node --check subpath.spec.mjs && node verify-subpath-policy.mjs"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.56.1"
+  }
+}

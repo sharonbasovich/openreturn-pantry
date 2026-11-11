@@ -1,0 +1,35 @@
+name: Draft cancelable calculation browser regression
+on:
+  push:
+    branches: [preview/cancelable-calculations-20261108]
+permissions:
+  contents: read
+jobs:
+  browser-regression:
+    runs-on: ubuntu-24.04
+    # Official browser image matches qa/browser/package.json exactly.
+    container: mcr.microsoft.com/playwright:v1.56.1-noble
+    defaults:
+      run:
+        shell: bash
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - run: npm test && npm run check && npm run verify:workers
+      - run: npm install --ignore-scripts --package-lock=false --registry=https://registry.npmjs.org
+        working-directory: qa/browser
+      - run: npm run check && npm test
+        working-directory: qa/browser
+      - uses: actions/upload-artifact@v7
+        if: always()
+        with:
+          name: draft-browser-regression
+          path: evidence/browser-regression/
+          if-no-files-found: warn
+          retention-days: 7

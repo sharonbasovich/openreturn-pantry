@@ -4,3 +4,6 @@ dist/
 .DS_Store
 *.zip
 *.tar.gz
+
+qa/browser/node_modules/
+evidence/browser-regression/

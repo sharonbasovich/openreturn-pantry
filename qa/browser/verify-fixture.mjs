@@ -1,0 +1,30 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
+import {capacityFixture,distinctConstraintFixture} from './fixture.mjs';
+import {validateScenario} from '../../src/model.mjs';
+const original=await readFile(new URL('../../scripts/verify-worker-threads.mjs',import.meta.url),'utf8');
+const start=original.indexOf('const large=');const end=original.indexOf('let ticks=',start);
+assert(start>=0&&end>start,'Existing fixture boundaries must remain identifiable');
+const existing=vm.runInNewContext(original.slice(start,end)+'JSON.stringify(large)');
+assert.deepEqual(capacityFixture(),JSON.parse(existing));
+const normalized=validateScenario(capacityFixture());
+assert.equal(normalized.connections.length,1200);assert.equal(normalized.origins.length,24);
+assert.equal((normalized.settings.latestStart-normalized.settings.earliestStart)/normalized.settings.stepMinutes+1,48);
+console.log('Fixture matches existing bounded synthetic worker-thread fixture: 1200 connections, 24 origins, 48 starts.');
+
+// Guard workload semantics, not just schema validity or identity counts.
+const distinct=validateScenario(distinctConstraintFixture());
+assert.deepEqual(distinctConstraintFixture(),distinctConstraintFixture(),'Deterministic fixture');
+assert.equal(distinct.dataKind,'synthetic');
+assert.equal(distinct.connections.length,1200);assert.equal(distinct.origins.length,24);
+assert.equal((distinct.settings.latestStart-distinct.settings.earliestStart)/distinct.settings.stepMinutes+1,48);
+assert.equal(new Set(distinct.origins.map(o=>JSON.stringify([o.stopId,o.leaveAfter,o.homeBy,o.maxAwayMinutes]))).size,24);
+assert.equal(new Set(distinct.origins.map(o=>o.homeBy)).size,24);
+const {auditDecision,auditSensitivity}=await import('../../src/decision.mjs');
+const decision=auditDecision(distinct),sensitivity=auditSensitivity(distinct);
+assert.equal(decision.baseline.reachable,9);assert.equal(decision.best.reachable,19);
+assert.deepEqual(decision.windows.map(w=>w.reachable),[4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,19,19,19,19,19,18,17,16,15,14,13,12,11,10,9,8,7,6,5,4,3,2,1,0,0,0,0,0,0,0,0,0]);
+assert.equal(new Set(decision.comparison.windows.map(w=>w.results.map(r=>Number(r.reachable)).join(''))).size>24,true);
+assert.deepEqual(sensitivity.cases.map(c=>[c.fixed.reachable,c.reoptimized.reachable]),[[8,9],[19,19],[8,9]]);
+console.log('Distinct fixture: 24 routing constraint tuples, 1200 connections, 48 windows; baseline 9, best 19; visit sensitivity 8 fixed / 9 reoptimized.');
