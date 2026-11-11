@@ -7,6 +7,11 @@ permissions:
 jobs:
   browser-regression:
     runs-on: ubuntu-24.04
+    # Official browser image matches qa/browser/package.json exactly.
+    container: mcr.microsoft.com/playwright:v1.56.1-noble
+    defaults:
+      run:
+        shell: bash
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v7
@@ -18,8 +23,6 @@ jobs:
           package-manager-cache: false
       - run: npm test && npm run check && npm run verify:workers
       - run: npm install --ignore-scripts --package-lock=false --registry=https://registry.npmjs.org
-        working-directory: qa/browser
-      - run: npx playwright install --with-deps chromium
         working-directory: qa/browser
       - run: npm run check && npm test
         working-directory: qa/browser

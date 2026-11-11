@@ -112,3 +112,24 @@ no repeated-computation loop or new artificial delay is introduced.
 These two additional browser cases have not been executed locally. They require
 the authorized hosted workflow before browser acceptance can be claimed. Local
 syntax/fixture and Node checks alone do not establish native-browser behavior.
+
+
+## Hosted browser dependency setup
+
+Hosted run 43053005013 at commit 5118512ff876425cafbb11d7ed76f270464bc254
+reached the ten-minute limit during browser/OS dependency installation after
+repeated DNS failures resolving azure.archive.ubuntu.com. Its 623 Node tests and
+worker checks passed; browser tests did not start. This is infrastructure evidence,
+not a browser test result.
+
+The hosted workflow now uses the official
+`mcr.microsoft.com/playwright:v1.56.1-noble` image, matching the pinned Playwright
+package. It supplies the browser and OS dependencies, so the redundant hosted
+`playwright install --with-deps` step is removed. Node 24 is still selected with
+setup-node, and run steps explicitly use Bash. All test commands, branch-only
+push trigger, read-only contents permission, disabled persisted checkout
+credentials, ten-minute limit and always-upload artifact settings are unchanged.
+No sandbox flags, privileges, network settings or application behavior change.
+The standalone local setup instructions above still apply outside this image
+when installation and browser execution are authorized. The container change
+requires a fresh hosted run before claiming browser acceptance.
