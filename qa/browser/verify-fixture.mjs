@@ -1,0 +1,14 @@
+import assert from 'node:assert/strict';
+import {readFile} from 'node:fs/promises';
+import vm from 'node:vm';
+import {capacityFixture} from './fixture.mjs';
+import {validateScenario} from '../../src/model.mjs';
+const original=await readFile(new URL('../../scripts/verify-worker-threads.mjs',import.meta.url),'utf8');
+const start=original.indexOf('const large=');const end=original.indexOf('let ticks=',start);
+assert(start>=0&&end>start,'Existing fixture boundaries must remain identifiable');
+const existing=vm.runInNewContext(original.slice(start,end)+'JSON.stringify(large)');
+assert.deepEqual(capacityFixture(),JSON.parse(existing));
+const normalized=validateScenario(capacityFixture());
+assert.equal(normalized.connections.length,1200);assert.equal(normalized.origins.length,24);
+assert.equal((normalized.settings.latestStart-normalized.settings.earliestStart)/normalized.settings.stepMinutes+1,48);
+console.log('Fixture matches existing bounded synthetic worker-thread fixture: 1200 connections, 24 origins, 48 starts.');
