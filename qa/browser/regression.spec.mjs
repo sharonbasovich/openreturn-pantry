@@ -21,7 +21,21 @@ async function save(page,testInfo,kind,expected,label=kind){
   expect(download.suggestedFilename()).toBe(`openreturn-scenario.${kind}`);
   const target=testInfo.outputPath(`saved-${label}.${kind}`);await download.saveAs(target);
   const actual=await readFile(target);expect(actual.equals(Buffer.from(expected,'utf8'))).toBeTruthy();
-  await expect(page.locator('#export-text')).toHaveValue(expected);
+  // Download bytes above remain exact, including CSV's required CRLF endings.
+  // HTMLTextAreaElement.value normalizes CRLF and lone CR to LF (HTML API value).
+  let fallbackExpected=expected;
+  if(kind==='csv'){
+    expect(expected).toContain('\r\n');
+    expect(expected.replaceAll('\r\n','')).not.toMatch(/[\r\n]/);
+    const nativeValue=await page.evaluate(()=>{
+      const textarea=document.createElement('textarea');
+      textarea.value='CRLF\r\nCR\rLF\nend';return textarea.value;
+    });
+    expect(nativeValue).toBe('CRLF\nCR\nLF\nend');
+    fallbackExpected=expected.replaceAll('\r\n','\n');
+    expect(await page.locator('#export-text').inputValue()).not.toContain('\r');
+  }
+  await expect(page.locator('#export-text')).toHaveValue(fallbackExpected);
   await testInfo.attach(`saved-${label}`,{path:target});
   await testInfo.attach(`sha256-${label}`,{body:JSON.stringify({actual:sha(actual),expected:sha(Buffer.from(expected))}),contentType:'application/json'});
 }

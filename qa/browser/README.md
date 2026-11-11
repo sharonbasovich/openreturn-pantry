@@ -67,3 +67,15 @@ A passing Node suite is not a browser pass. Native focus, download and worker
 assertions require the future authorized browser run. Physical devices, screen
 readers, native print, deployment CSP, arbitrary browser message ordering and
 worst-case latency/memory remain outside this harness's claims.
+
+## First hosted run and CSV fallback correction
+
+Run 43024388574 at commit 51445fc0 completed six injected tests successfully but
+failed both exact tests on CSV fallback textarea equality. The immediately prior
+strict saved-file byte equality passed. The serializer intentionally emits CRLF;
+HTML textarea API values normalize CRLF to LF. The harness now checks CSV has
+CRLF-only line endings, verifies native textarea normalization with a mixed-ending
+probe, and compares fallback text with only the corresponding CRLF-to-LF change.
+Actual downloaded bytes remain strictly compared without normalization. TXT/JSON
+fallback comparisons are unchanged. The failed run remains evidence; the revised
+assertion still needs a new hosted run before claiming an all-green browser pass.
